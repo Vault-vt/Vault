@@ -253,11 +253,12 @@
     cursor:pointer; padding:6px 10px; border-radius:10px;
   }
   .upload-link:hover{background:var(--accent-soft);}
-  .icon-edit-wrap{position:relative; cursor:pointer; flex-shrink:0;}
+  .icon-edit-wrap{position:relative; cursor:pointer; flex-shrink:0; z-index:0;}
+  .icon-edit-wrap .icon{position:relative; z-index:1;}
   .icon-edit-badge{
     position:absolute; bottom:-3px; right:-3px; width:18px; height:18px; border-radius:50%;
     background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center;
-    font-size:9px; border:2px solid var(--surface);
+    font-size:9px; border:2px solid var(--surface); z-index:2;
   }
   .custom-form{text-align:center;}
   .custom-form .hint{font-size:10.5px; color:var(--muted); margin:-4px 0 10px;}
@@ -292,7 +293,6 @@
       </div>
     </div>
     <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-      <div id="headerLangSwitch"></div>
       <button class="lock-btn" id="lockBtnEl" onclick="lockVault()" title="Lock vault">SVG_LOCK</button>
       <button class="add-btn" onclick="openAddApp()">SVG_PLUS <span id="addAppBtnText">Add app</span></button>
     </div>
@@ -682,8 +682,6 @@ function applyStaticTexts(){
   document.getElementById('lockBtnEl').title = t('lockVault');
   document.getElementById('addAppBtnText').textContent = t('addApp');
   document.getElementById('searchInput').placeholder = t('search');
-  const hs = document.getElementById('headerLangSwitch');
-  if(hs) hs.innerHTML = langSwitcherHtml();
 }
 
 // ---- encryption helpers (Web Crypto: PBKDF2 -> AES-GCM, key-wrapping so both a password
@@ -845,17 +843,38 @@ function friendlyFirebaseError(e){
   return map[code] || (e && e.message) || (lang==='ar' ? 'حدث خطأ ما. حاول مرة أخرى.' : lang==='fr' ? 'Une erreur est survenue. Réessayez.' : 'Something went wrong. Try again.');
 }
 
+function showConfirmDialog(message, onConfirm){
+  const wrap = document.createElement('div');
+  wrap.className = 'overlay';
+  wrap.innerHTML = `
+    <div class="panel" style="max-width:340px;">
+      <div class="panel-body" style="padding-top:24px;">
+        <p style="font-size:14px; color:var(--ink); line-height:1.6; margin:0 0 18px;">${esc(message)}</p>
+        <div class="form-actions" style="justify-content:center;">
+          <button class="btn-ghost" id="confirmDialogCancel">${esc(t('cancel'))}</button>
+          <button class="btn-solid" id="confirmDialogOk">${esc(t('continueBtn'))}</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(wrap);
+  const remove = () => wrap.remove();
+  wrap.querySelector('#confirmDialogCancel').onclick = remove;
+  wrap.querySelector('#confirmDialogOk').onclick = () => { remove(); onConfirm(); };
+  wrap.addEventListener('click', e => { if(e.target === wrap) remove(); });
+}
+
 async function startPasswordReset(){
   const email = document.getElementById('lockEmail').value.trim();
   if(!email || !email.includes('@')){ showLockError(t('enterEmailFirst')); return; }
-  const proceed = confirm(t('forgotHint'));
-  if(!proceed) return;
-  try{
-    await window.fb.sendPasswordResetEmail(window.fb.auth, email);
-    showLockNotice(t('resetSent'));
-  }catch(e){
-    showLockError(friendlyFirebaseError(e));
-  }
+  showConfirmDialog(t('forgotHint'), async () => {
+    try{
+      await window.fb.sendPasswordResetEmail(window.fb.auth, email);
+      showLockNotice(t('resetSent'));
+    }catch(e){
+      showLockError(friendlyFirebaseError(e));
+    }
+  });
 }
 
 async function submitCreateAccount(){
@@ -996,21 +1015,22 @@ async function submitRecoveryUnlock(){
   }
 }
 
-async function confirmStartFresh(){
-  if(!confirm(t('startFreshConfirm'))) return;
-  const key = await generateDataKey();
-  const pwWrap = await wrapWithSecret(pendingRewrapPassword, key);
-  const recoveryKey = genRecoveryKey();
-  const rkWrap = await wrapWithSecret(recoveryKey, key);
-  dataKey = key;
-  apps = [];
-  const vaultBlob = await encryptVaultWithKey(dataKey, apps);
-  await window.fb.setDoc(window.fb.doc(window.fb.db, 'vaults', currentUid), {
-    pwWrap, rkWrap, vaultIv: vaultBlob.iv, vaultData: vaultBlob.data
+function confirmStartFresh(){
+  showConfirmDialog(t('startFreshConfirm'), async () => {
+    const key = await generateDataKey();
+    const pwWrap = await wrapWithSecret(pendingRewrapPassword, key);
+    const recoveryKey = genRecoveryKey();
+    const rkWrap = await wrapWithSecret(recoveryKey, key);
+    dataKey = key;
+    apps = [];
+    const vaultBlob = await encryptVaultWithKey(dataKey, apps);
+    await window.fb.setDoc(window.fb.doc(window.fb.db, 'vaults', currentUid), {
+      pwWrap, rkWrap, vaultIv: vaultBlob.iv, vaultData: vaultBlob.data
+    });
+    storageOk = true;
+    pendingRewrapPassword = null;
+    renderRecoveryReveal(recoveryKey);
   });
-  storageOk = true;
-  pendingRewrapPassword = null;
-  renderRecoveryReveal(recoveryKey);
 }
 
 async function saveApps(){
