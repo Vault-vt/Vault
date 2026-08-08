@@ -91,6 +91,14 @@
     font-family:'JetBrains Mono'; font-size:14px; color:var(--ink); margin-bottom:10px; box-sizing:border-box;
   }
   .lock-card input:focus{outline:none; border-color:var(--accent);}
+  .pw-field-wrap{position:relative;}
+  .pw-field-wrap input{padding-right:44px;}
+  html[dir="rtl"] .pw-field-wrap input{padding-right:16px; padding-left:44px;}
+  .pw-eye{
+    position:absolute; right:6px; top:50%; transform:translateY(-50%); margin-top:-5px;
+    background:none; border:none; color:var(--muted); padding:8px; cursor:pointer; display:flex;
+  }
+  html[dir="rtl"] .pw-eye{right:auto; left:6px;}
   .lock-card .lock-error{display:flex; align-items:center; gap:6px; justify-content:center; color:#B84B4B; font-size:12.5px; margin-bottom:10px;}
   .lock-submit{
     width:100%; padding:14px; border-radius:14px; border:none; background:var(--accent); color:#fff;
@@ -798,8 +806,15 @@ function renderLockScreen(mode){
       <p class="sub">${esc(isSignup ? t('signupTitle') : t('loginTitle'))}</p>
       <div id="lockError"></div>
       <input type="email" id="lockEmail" placeholder="${esc(t('email'))}" autocomplete="email">
-      <input type="password" id="lockPw" placeholder="${esc(t('password'))}" autocomplete="${isSignup ? 'new-password' : 'current-password'}">
-      ${isSignup ? `<input type="password" id="lockPw2" placeholder="${esc(t('confirmPassword'))}" autocomplete="new-password">` : ''}
+      <div class="pw-field-wrap">
+        <input type="password" id="lockPw" placeholder="${esc(t('password'))}" autocomplete="${isSignup ? 'new-password' : 'current-password'}">
+        <button type="button" class="pw-eye" onclick="togglePwField('lockPw', this)" tabindex="-1">${SVG.eye}</button>
+      </div>
+      ${isSignup ? `
+      <div class="pw-field-wrap">
+        <input type="password" id="lockPw2" placeholder="${esc(t('confirmPassword'))}" autocomplete="new-password">
+        <button type="button" class="pw-eye" onclick="togglePwField('lockPw2', this)" tabindex="-1">${SVG.eye}</button>
+      </div>` : ''}
       <button class="lock-submit" id="lockSubmitBtn" onclick="${isSignup ? 'submitCreateAccount()' : 'submitLogin()'}">
         ${SVG.lock} ${esc(isSignup ? t('createAccountBtn') : t('loginBtn'))}
       </button>
@@ -818,6 +833,13 @@ function renderLockScreen(mode){
   });
   const ls = document.getElementById('lockLangSwitch');
   if(ls) ls.innerHTML = langSwitcherHtml();
+}
+
+function togglePwField(id, btn){
+  const input = document.getElementById(id);
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  btn.innerHTML = show ? SVG.eyeOff : SVG.eye;
 }
 
 function showLockError(msg){
