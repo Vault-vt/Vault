@@ -1,4 +1,4 @@
-const CACHE = "vault-v2";
+const CACHE = "vault-v3";
 const SHELL = [
   "/Vault/",
   "/Vault/index.html",
@@ -41,6 +41,26 @@ self.addEventListener("fetch", function(e) {
   if (url.indexOf("gstatic.com") >= 0) return;
   if (url.indexOf("google.com/s2/favicons") >= 0) return;
 
+  // The app page itself always goes to the network first, so code changes
+  // show up immediately instead of being stuck on an old cached copy.
+  if (e.request.mode === "navigate" || url.indexOf("/index.html") >= 0) {
+    e.respondWith(
+      fetch(e.request).then(function(response) {
+        if (response && response.status === 200) {
+          var clone = response.clone();
+          caches.open(CACHE).then(function(c) { c.put(e.request, clone); });
+        }
+        return response;
+      }).catch(function() {
+        return caches.match(e.request).then(function(cached) {
+          return cached || caches.match("/Vault/index.html");
+        });
+      })
+    );
+    return;
+  }
+
+  // Everything else (icons, manifest) — cache first, refresh in the background.
   e.respondWith(
     caches.match(e.request).then(function(cached) {
       if (cached) {
