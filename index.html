@@ -32,6 +32,10 @@
                 radial-gradient(1000px 500px at 100% 0%, #FDF0EA, transparent),
                 var(--bg1);
     font-family:'Inter',sans-serif; color:var(--ink);
+    -webkit-user-select:none; user-select:none; -webkit-touch-callout:none;
+  }
+  input, textarea, .recovery-key-box{
+    -webkit-user-select:text; user-select:text; -webkit-touch-callout:default;
   }
   svg.ic{width:1em;height:1em;vertical-align:-0.15em;}
   .wrap{max-width:880px; margin:0 auto; padding:32px 20px 80px;}
@@ -335,7 +339,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getFirestore, doc, getDoc, setDoc }
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const configured = !String(firebaseConfig.apiKey || "").startsWith("PASTE_");
@@ -347,7 +351,7 @@
       auth: getAuth(app),
       db: getFirestore(app),
       createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail,
-      doc, getDoc, setDoc,
+      doc, getDoc, setDoc, updateDoc, onSnapshot,
     };
   }
   window.dispatchEvent(new Event('firebase-ready'));
@@ -507,6 +511,9 @@ let dataKey = null;      // the actual AES key that encrypts the vault content
 let currentUid = null;
 let currentLockMode = null;
 let pendingRewrapPassword = null; // set during a recovery-key unlock so we can re-wrap dataKey under it
+let unsubscribeVaultListener = null;
+let panelOpenAppId = null;      // which app's detail panel is currently open, if any
+let panelEditingState = undefined; // the editingId last passed to renderAppPanel — undefined means "just browsing"
 
 function esc(s){ return (s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function uid(){ return Math.random().toString(36).slice(2,9); }
@@ -779,14 +786,43 @@ function enterApp(){
   applyStaticTexts();
   renderSyncNote();
   render();
+  startVaultListener();
+}
+
+function startVaultListener(){
+  if(!window.fb || !currentUid) return;
+  if(unsubscribeVaultListener){ unsubscribeVaultListener(); unsubscribeVaultListener = null; }
+  unsubscribeVaultListener = window.fb.onSnapshot(
+    window.fb.doc(window.fb.db, 'vaults', currentUid),
+    async (snap) => {
+      if(!snap.exists() || !dataKey) return;
+      try{
+        const doc = snap.data();
+        apps = await decryptVaultWithKey(dataKey, doc.vaultIv, doc.vaultData);
+        storageOk = true;
+      }catch(e){
+        return; // not decryptable with the current key yet (e.g. mid password-recovery) — ignore this update
+      }
+      renderSyncNote();
+      render();
+      // refresh the open app panel too, but only if the user isn't mid-edit or mid-confirm right now
+      if(panelOpenAppId && panelEditingState === undefined){
+        renderAppPanel();
+      }
+    },
+    () => { /* connection hiccup — local state stays as-is */ }
+  );
 }
 
 function lockVault(){
+  if(unsubscribeVaultListener){ unsubscribeVaultListener(); unsubscribeVaultListener = null; }
   if(window.fb) window.fb.signOut(window.fb.auth).catch(()=>{});
   dataKey = null;
   apps = [];
   currentUid = null;
   pendingRewrapPassword = null;
+  panelOpenAppId = null;
+  panelEditingState = undefined;
   document.getElementById('modalRoot').innerHTML = '';
   document.getElementById('mainApp').style.display = 'none';
   renderLockScreen('login');
@@ -1058,11 +1094,9 @@ function confirmStartFresh(){
 async function saveApps(){
   try{
     if(!window.fb || !currentUid || !dataKey) throw new Error('not ready');
-    const snap = await window.fb.getDoc(window.fb.doc(window.fb.db, 'vaults', currentUid));
-    const existing = snap.exists() ? snap.data() : {};
     const vaultBlob = await encryptVaultWithKey(dataKey, apps);
-    await window.fb.setDoc(window.fb.doc(window.fb.db, 'vaults', currentUid), {
-      ...existing, vaultIv: vaultBlob.iv, vaultData: vaultBlob.data
+    await window.fb.updateDoc(window.fb.doc(window.fb.db, 'vaults', currentUid), {
+      vaultIv: vaultBlob.iv, vaultData: vaultBlob.data
     });
     storageOk = true;
   }catch(e){
@@ -1122,7 +1156,11 @@ function render(){
   `).join('');
 }
 
-function closeModal(){ document.getElementById('modalRoot').innerHTML = ''; }
+function closeModal(){
+  document.getElementById('modalRoot').innerHTML = '';
+  panelOpenAppId = null;
+  panelEditingState = undefined;
+}
 
 function openAddApp(){
   document.getElementById('modalRoot').innerHTML = `
@@ -1340,10 +1378,12 @@ function createCustomApp(){
 
 function openApp(id){
   window.openAppId = id;
+  panelOpenAppId = id;
   renderAppPanel();
 }
 
 function renderAppPanel(editingId){
+  panelEditingState = editingId;
   const app = apps.find(a=>a.id===window.openAppId);
   if(!app){ closeModal(); return; }
   const accountsHtml = app.accounts.map((acc,i) => {
