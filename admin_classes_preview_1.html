@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Aperçu — Classes</title>
+<style>
+:root{
+    /* Same two variables as Paramètres — buttons here reference these so
+       changing brand colors updates everything, no separate hardcoded colors */
+    --color-bg: #1f2937;
+    --color-accent: #C9A227;
+}
+*{ box-sizing:border-box; }
+body{ margin:0; font-family:'Segoe UI', Arial, sans-serif; background:#f3f4f6; }
+
+.sidebar{ position:fixed; left:0; top:0; width:245px; height:100%; background:var(--color-bg); padding-top:20px; overflow-y:auto; }
+.logo{ color:white; text-align:center; font-size:22px; font-weight:700; margin-bottom:30px; letter-spacing:0.5px; padding-bottom:25px; border-bottom:1px solid rgba(255,255,255,0.1); }
+.logo span{ color:var(--color-accent); font-weight:600; }
+.sidebar ul{ list-style:none; padding-left:0; margin:0; }
+.sidebar ul li{ padding:10px 20px; }
+.sidebar ul li a{ text-decoration:none; color:#ddd; font-size:15px; display:block; border-radius:6px; padding:8px 10px; }
+.sidebar ul li a.active{ background:var(--color-accent); color:white; }
+.sidebar-section-label{ padding:14px 20px 6px; font-size:10.5px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:6px; }
+.director-badge{ background:color-mix(in srgb, var(--color-accent) 20%, transparent); color:var(--color-accent); font-size:9px; font-weight:700; padding:2px 6px; border-radius:6px; text-transform:none; letter-spacing:0; }
+
+.main-content{ margin-left:245px; padding:0 30px 30px; }
+.topbar{ display:flex; justify-content:space-between; align-items:center; padding:16px 0; margin-bottom:14px; border-bottom:1px solid #e5e7eb; }
+.lang-toggle{ display:flex; align-items:center; background:#f3f4f6; border-radius:20px; padding:3px; }
+.lang-option{ padding:6px 14px; border-radius:16px; font-size:12.5px; font-weight:700; color:#6b7280; cursor:pointer; }
+.lang-option.active{ background:#1f2937; color:#C9A227; }
+.user-menu{ position:relative; }
+.user-trigger{ display:flex; align-items:center; gap:10px; cursor:pointer; padding:6px 10px 6px 6px; border-radius:24px; }
+.user-trigger:hover{ background:#f3f4f6; }
+.user-avatar{ width:36px; height:36px; border-radius:50%; background:#1f2937; color:#C9A227; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; }
+.user-name{ font-size:13.5px; font-weight:600; color:#1f2937; }
+.user-role{ font-size:11px; color:#9ca3af; }
+.chevron{ font-size:10px; color:#9ca3af; margin-left:2px; }
+.user-dropdown{ display:none; position:absolute; right:0; top:52px; background:white; border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.15); width:200px; overflow:hidden; z-index:50; }
+.user-dropdown.open{ display:block; }
+.user-dropdown a{ display:flex; align-items:center; gap:10px; padding:12px 16px; font-size:13.5px; color:#374151; text-decoration:none; }
+.user-dropdown a:hover{ background:#f9fafb; }
+.user-dropdown a.logout{ color:#e53935; border-top:1px solid #f0f0f0; }
+
+.page-title{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+.page-title h1{ font-size:26px; font-weight:600; color:#1f2937; margin:0; }
+.btn-primary{ background:var(--color-accent); color:#111827; border:none; padding:11px 20px; border-radius:10px; font-size:13.5px; font-weight:700; cursor:pointer; }
+
+/* TABS — 3 this time, each keeping its own distinct feature set */
+.tabs{ display:flex; gap:4px; margin-bottom:18px; background:white; border-radius:12px; padding:4px; width:fit-content; }
+.tab{ padding:9px 20px; border-radius:9px; font-size:13px; font-weight:600; color:#6b7280; cursor:pointer; }
+.tab.active{ background:var(--color-bg); color:var(--color-accent); }
+
+.tab-panel{ display:none; }
+.tab-panel.active{ display:block; }
+
+/* TABLE */
+.table-container{ background:white; padding:20px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+.table-controls{ display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap; }
+.search-input{ position:relative; }
+.search-input input{ width:230px; padding:10px 15px 10px 35px; border-radius:25px; border:1px solid #ddd; font-size:14px; outline:none; }
+.search-input input:focus{ border-color:#d4af37; box-shadow:0 0 4px rgba(212,175,55,0.4); }
+.search-icon{ position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:14px; color:#777; }
+.filter-select{ padding:9px 15px; border-radius:20px; border:1px solid #ddd; font-size:14px; background:white; cursor:pointer; }
+
+table{ width:100%; border-collapse:collapse; }
+table thead{ background:#1f2937; color:white; }
+table th{ padding:12px; text-align:left; font-weight:600; font-size:12.5px; }
+table th.center{ text-align:center; }
+table td{ padding:11px 12px; border-bottom:1px solid #eee; font-size:13px; color:#374151; }
+table td.center{ text-align:center; }
+table tbody tr:hover{ background:#f9fafb; }
+tr.archived-row{ opacity:0.6; }
+
+.btn-icon{ background:#f3f4f6; color:#374151; border:none; width:30px; height:30px; border-radius:8px; font-size:13px; cursor:pointer; }
+.btn-archive{
+    background:color-mix(in srgb, var(--color-bg) 10%, white);
+    color:var(--color-bg);
+    border:none; padding:6px 13px; border-radius:16px; font-size:11.5px; font-weight:600; cursor:pointer;
+    transition:background 0.2s;
+}
+.btn-archive:hover{ background:color-mix(in srgb, var(--color-bg) 20%, white); }
+.btn-activate{
+    background:color-mix(in srgb, var(--color-accent) 15%, white);
+    color:var(--color-accent);
+    border:none; padding:6px 13px; border-radius:16px; font-size:11.5px; font-weight:600; cursor:pointer;
+    transition:background 0.2s;
+}
+.btn-activate:hover{ background:color-mix(in srgb, var(--color-accent) 28%, white); }
+.actions-cell{ display:flex; gap:6px; align-items:center; }
+
+.occ-bar{ width:70px; height:6px; background:#f0f0f0; border-radius:3px; overflow:hidden; display:inline-block; margin-right:8px; vertical-align:middle; }
+.occ-fill{ height:100%; background:#2e7d32; }
+.occ-fill.warn{ background:#C9A227; }
+.occ-fill.full{ background:#e53935; }
+
+.action-buttons{ display:flex; gap:6px; }
+.btn-classe{
+    background:color-mix(in srgb, var(--color-accent) 12%, white);
+    color:var(--color-accent);
+    border:none; padding:6px 12px; border-radius:14px; font-size:11.5px; font-weight:600; cursor:pointer; text-decoration:none;
+    transition:background 0.2s;
+}
+.btn-classe:hover{ background:color-mix(in srgb, var(--color-accent) 28%, white); }
+
+.pagination{ margin-top:20px; display:flex; justify-content:center; gap:8px; }
+.pagination a{ padding:6px 12px; background:#1f2937; color:white; border-radius:6px; text-decoration:none; font-size:14px; }
+.active-page{ background:#d4af37 !important; color:#111827 !important; font-weight:600; }
+
+/* MODALS */
+.modal-overlay{ position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); display:none; align-items:center; justify-content:center; z-index:1000; }
+.modal-overlay.open{ display:flex; }
+.modal-box{ background:white; border-radius:16px; width:420px; max-width:95%; padding:26px 28px; }
+.modal-box h3{ color:#1f2937; font-size:18px; margin:0 0 14px; }
+.form-row{ margin-bottom:12px; }
+.form-row label{ font-size:12.5px; font-weight:600; color:#1f2937; display:block; margin-bottom:5px; }
+.form-row input, .form-row select{ width:100%; padding:9px 11px; border:1px solid #ddd; border-radius:8px; font-size:13px; font-family:inherit; }
+.modal-actions{ display:flex; gap:10px; margin-top:16px; }
+.btn-cancel{ background:none; border:1px solid #9ca3af; color:#6b7280; padding:11px 18px; border-radius:10px; font-size:13px; cursor:pointer; flex:1; }
+</style>
+</head>
+<body>
+<script>
+function toggleUserMenu(el){ el.nextElementSibling.classList.toggle('open'); }
+document.addEventListener('click', function(e){
+    if(!e.target.closest('.user-menu')){
+        document.querySelectorAll('.user-dropdown.open').forEach(d => d.classList.remove('open'));
+    }
+});
+function setLang(el){
+    el.closest('.lang-toggle').querySelectorAll('.lang-option').forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
+}
+function showTab(name, el){
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+}
+</script>
+
+<div class="sidebar">
+    <h2 class="logo">Système <span>Scolaire</span></h2>
+    <ul>
+        <li><a href="admin_dashboard_preview.html">Tableau de bord</a></li>
+        <li><a href="admin_etudiants_preview.html">Étudiants</a></li>
+        <li><a href="#" title="Design à venir">Enseignants</a></li>
+        <li><a href="admin_classes_preview.html" class="active">Classes</a></li>
+        <li><a href="paiements_vue_ensemble_preview.html">Paiements</a></li>
+    </ul>
+    <div class="sidebar-section-label">Direction <span class="director-badge">Directeur uniquement</span></div>
+    <ul>
+        <li><a href="admin_utilisateurs_preview.html">Utilisateurs</a></li>
+        <li><a href="admin_parametres_preview.html">Paramètres</a></li>
+        <li><a href="#" title="Design à venir">Journal d'activité</a></li>
+    </ul>
+</div>
+
+<div class="main-content">
+
+    <div class="topbar">
+        <div class="lang-toggle">
+            <span class="lang-option active" onclick="setLang(this)">FR</span>
+            <span class="lang-option" onclick="setLang(this)">ع</span>
+        </div>
+        <div class="user-menu">
+            <div class="user-trigger" onclick="toggleUserMenu(this)">
+                <div class="user-avatar">MA</div>
+                <div>
+                    <div class="user-name">Mohamed Abdellahi</div>
+                    <div class="user-role">Administrateur</div>
+                </div>
+                <span class="chevron">▼</span>
+            </div>
+            <div class="user-dropdown">
+                <a href="profile_preview.html">Mon profil</a>
+                <a href="login_preview.html" class="logout">Déconnexion</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-title">
+        <h1>Classes</h1>
+        <button class="btn-primary" onclick="document.getElementById('addClassModal').classList.add('open')">+ Ajouter une classe</button>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('liste', this)">Liste</div>
+        <div class="tab" onclick="showTab('actifs', this)">Actifs</div>
+        <div class="tab" onclick="showTab('archives', this)">Archivés</div>
+    </div>
+
+    <!-- ===== LISTE — every class, edit + archive/activate per row ===== -->
+    <div class="tab-panel active" id="tab-liste">
+        <div class="table-container">
+
+            <div class="table-controls">
+                <div class="search-input"><span class="search-icon">🔍</span><input type="text" placeholder="Rechercher une classe..."></div>
+                <select class="filter-select"><option>Tous les niveaux</option><option>Primaire</option><option>Collège</option><option>Lycée</option></select>
+            </div>
+
+            <table>
+                <thead><tr><th>#</th><th>Classe</th><th>Niveau</th><th>Capacité</th><th>Frais</th><th>Actions</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td>1</td><td>Terminale S2 — Bloc A</td><td>Lycée</td><td>40</td><td>3 500 MRU</td>
+                        <td class="actions-cell">
+                            <button class="btn-icon" onclick="document.getElementById('editClassModal').classList.add('open')">✎</button>
+                            <button class="btn-archive">Archiver</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2</td><td>6ème A</td><td>Collège</td><td>35</td><td>3 500 MRU</td>
+                        <td class="actions-cell">
+                            <button class="btn-icon" onclick="document.getElementById('editClassModal').classList.add('open')">✎</button>
+                            <button class="btn-archive">Archiver</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>3</td><td>CP2 — Section Bilingue</td><td>Primaire</td><td>30</td><td>3 500 MRU</td>
+                        <td class="actions-cell">
+                            <button class="btn-icon" onclick="document.getElementById('editClassModal').classList.add('open')">✎</button>
+                            <button class="btn-archive">Archiver</button>
+                        </td>
+                    </tr>
+                    <tr class="archived-row">
+                        <td>4</td><td>Terminale L (ancienne filière)</td><td>Lycée</td><td>∞</td><td>3 000 MRU</td>
+                        <td class="actions-cell">
+                            <button class="btn-activate">Activer</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="pagination"><a href="#" class="active-page">1</a><a href="#">2</a><a href="#">3</a></div>
+        </div>
+    </div>
+
+    <!-- ===== ACTIFS — occupancy + quick links per class ===== -->
+    <div class="tab-panel" id="tab-actifs">
+        <div class="table-container">
+
+            <div class="table-controls">
+                <div class="search-input"><span class="search-icon">🔍</span><input type="text" placeholder="Rechercher une classe..."></div>
+                <select class="filter-select"><option>Tous les niveaux</option><option>Primaire</option><option>Collège</option><option>Lycée</option></select>
+            </div>
+
+            <table>
+                <thead><tr><th>#</th><th>Classe</th><th>Niveau</th><th class="center">Élèves</th><th>Actions</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td>1</td><td>Terminale S2 — Bloc A</td><td>Lycée</td>
+                        <td class="center"><span class="occ-bar"><span class="occ-fill warn" style="width:95%;"></span></span>38 / 40</td>
+                        <td class="action-buttons">
+                            <a href="#" class="btn-classe" title="Design à venir">Élèves</a>
+                            <a href="#" class="btn-classe" title="Design à venir">Enseignants</a>
+                            <a href="#" class="btn-classe" title="Design à venir">Emploi</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2</td><td>6ème A</td><td>Collège</td>
+                        <td class="center"><span class="occ-bar"><span class="occ-fill full" style="width:100%;"></span></span>35 / 35</td>
+                        <td class="action-buttons">
+                            <a href="#" class="btn-classe" title="Design à venir">Élèves</a>
+                            <a href="#" class="btn-classe" title="Design à venir">Enseignants</a>
+                            <a href="#" class="btn-classe" title="Design à venir">Emploi</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>3</td><td>CP2 — Section Bilingue</td><td>Primaire</td>
+                        <td class="center"><span class="occ-bar"><span class="occ-fill" style="width:63%;"></span></span>19 / 30</td>
+                        <td class="action-buttons">
+                            <a href="#" class="btn-classe" title="Design à venir">Élèves</a>
+                            <a href="#" class="btn-classe" title="Design à venir">Enseignants</a>
+                            <a href="#" class="btn-classe" title="Design à venir">Emploi</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="pagination"><a href="#" class="active-page">1</a><a href="#">2</a></div>
+        </div>
+    </div>
+
+    <!-- ===== ARCHIVÉS — activate-only ===== -->
+    <div class="tab-panel" id="tab-archives">
+        <div class="table-container">
+
+            <div class="table-controls">
+                <div class="search-input"><span class="search-icon">🔍</span><input type="text" placeholder="Rechercher une classe..."></div>
+                <select class="filter-select"><option>Tous les niveaux</option><option>Primaire</option><option>Collège</option><option>Lycée</option></select>
+            </div>
+
+            <table>
+                <thead><tr><th>#</th><th>Classe</th><th>Niveau</th><th>Capacité</th><th>Action</th></tr></thead>
+                <tbody>
+                    <tr class="archived-row">
+                        <td>1</td><td>Terminale L (ancienne filière)</td><td>Lycée</td><td>∞</td>
+                        <td><button class="btn-activate">Activer</button></td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- ADD CLASS MODAL -->
+<div class="modal-overlay" id="addClassModal">
+    <div class="modal-box">
+        <h3>Ajouter une classe</h3>
+        <div class="form-row"><label>Nom de la classe</label><input type="text" placeholder="Ex : Terminale S2 — Bloc A"></div>
+        <div class="form-row"><label>Niveau</label><select><option>Choisir un niveau</option><option>Primaire</option><option>Collège</option><option>Lycée</option></select></div>
+        <div class="form-row"><label>Capacité (laisser vide = illimité)</label><input type="number" placeholder="Ex : 40"></div>
+        <div class="form-row"><label>Frais de scolarité (MRU)</label><input type="number" placeholder="Ex : 3500"></div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="document.getElementById('addClassModal').classList.remove('open')">Annuler</button>
+            <button class="btn-primary" style="flex:1;" onclick="document.getElementById('addClassModal').classList.remove('open')">Ajouter</button>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT CLASS MODAL -->
+<div class="modal-overlay" id="editClassModal">
+    <div class="modal-box">
+        <h3>Modifier la classe</h3>
+        <div class="form-row"><label>Nom de la classe</label><input type="text" value="Terminale S2 — Bloc A"></div>
+        <div class="form-row"><label>Niveau</label><select><option selected>Lycée</option><option>Collège</option><option>Primaire</option></select></div>
+        <div class="form-row"><label>Capacité</label><input type="number" value="40"></div>
+        <div class="form-row"><label>Frais de scolarité (MRU)</label><input type="number" value="3500"></div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="document.getElementById('editClassModal').classList.remove('open')">Annuler</button>
+            <button class="btn-primary" style="flex:1;" onclick="document.getElementById('editClassModal').classList.remove('open')">Modifier</button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', function(e){ if(e.target === this) this.classList.remove('open'); });
+});
+</script>
+
+</body>
+</html>

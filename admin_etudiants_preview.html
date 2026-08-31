@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Aperçu — Étudiants</title>
+<style>
+*{ box-sizing:border-box; }
+body{ margin:0; font-family:'Segoe UI', Arial, sans-serif; background:#f3f4f6; }
+
+.sidebar{ position:fixed; left:0; top:0; width:245px; height:100%; background:#1f2937; padding-top:20px; overflow-y:auto; }
+.logo{ color:white; text-align:center; font-size:22px; font-weight:700; margin-bottom:30px; letter-spacing:0.5px; padding-bottom:25px; border-bottom:1px solid rgba(255,255,255,0.1); }
+.logo span{ color:#C9A227; font-weight:600; }
+.sidebar ul{ list-style:none; padding-left:0; margin:0; }
+.sidebar ul li{ padding:10px 20px; }
+.sidebar ul li a{ text-decoration:none; color:#ddd; font-size:15px; display:block; border-radius:6px; padding:8px 10px; }
+.sidebar ul li a.active{ background:#C9A227; color:white; }
+.sidebar-section-label{ padding:14px 20px 6px; font-size:10.5px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:6px; }
+.director-badge{ background:rgba(201,162,39,0.2); color:#C9A227; font-size:9px; font-weight:700; padding:2px 6px; border-radius:6px; text-transform:none; letter-spacing:0; }
+
+.main-content{ margin-left:245px; padding:0 30px 30px; }
+.topbar{ display:flex; justify-content:space-between; align-items:center; padding:16px 0; margin-bottom:14px; border-bottom:1px solid #e5e7eb; }
+.lang-toggle{ display:flex; align-items:center; background:#f3f4f6; border-radius:20px; padding:3px; }
+.lang-option{ padding:6px 14px; border-radius:16px; font-size:12.5px; font-weight:700; color:#6b7280; cursor:pointer; }
+.lang-option.active{ background:#1f2937; color:#C9A227; }
+.user-menu{ position:relative; }
+.user-trigger{ display:flex; align-items:center; gap:10px; cursor:pointer; padding:6px 10px 6px 6px; border-radius:24px; }
+.user-trigger:hover{ background:#f3f4f6; }
+.user-avatar{ width:36px; height:36px; border-radius:50%; background:#1f2937; color:#C9A227; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; }
+.user-name{ font-size:13.5px; font-weight:600; color:#1f2937; }
+.user-role{ font-size:11px; color:#9ca3af; }
+.chevron{ font-size:10px; color:#9ca3af; margin-left:2px; }
+.user-dropdown{ display:none; position:absolute; right:0; top:52px; background:white; border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.15); width:200px; overflow:hidden; z-index:50; }
+.user-dropdown.open{ display:block; }
+.user-dropdown a{ display:flex; align-items:center; gap:10px; padding:12px 16px; font-size:13.5px; color:#374151; text-decoration:none; }
+.user-dropdown a:hover{ background:#f9fafb; }
+.user-dropdown a.logout{ color:#e53935; border-top:1px solid #f0f0f0; }
+.user-dropdown svg{ width:16px; height:16px; stroke:currentColor; }
+
+.page-title{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+.page-title h1{ font-size:26px; font-weight:600; color:#1f2937; margin:0; }
+.btn-primary{ background:#d4af37; color:#111827; border:none; padding:11px 20px; border-radius:10px; font-size:13.5px; font-weight:700; cursor:pointer; }
+
+/* TABS */
+.tabs{ display:flex; gap:4px; margin-bottom:18px; background:white; border-radius:12px; padding:4px; width:fit-content; }
+.tab{ padding:9px 20px; border-radius:9px; font-size:13px; font-weight:600; color:#6b7280; cursor:pointer; }
+.tab.active{ background:#1f2937; color:#C9A227; }
+
+/* TABLE */
+.table-container{ background:white; padding:20px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+.table-controls{ display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap; }
+.search-input{ position:relative; }
+.search-input input{ width:230px; padding:10px 15px 10px 35px; border-radius:25px; border:1px solid #ddd; font-size:14px; outline:none; }
+.search-input input:focus{ border-color:#d4af37; box-shadow:0 0 4px rgba(212,175,55,0.4); }
+.search-icon{ position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:14px; color:#777; }
+.filter-select{ padding:9px 15px; border-radius:20px; border:1px solid #ddd; font-size:14px; background:white; cursor:pointer; }
+
+table{ width:100%; border-collapse:collapse; }
+table thead{ background:#1f2937; color:white; }
+table th{ padding:12px; text-align:left; font-weight:600; font-size:12.5px; }
+table td{ padding:10px 12px; border-bottom:1px solid #eee; font-size:13px; color:#374151; }
+table tbody tr:hover{ background:#f9fafb; }
+.s-row{ display:flex; align-items:center; gap:10px; }
+.s-avatar{ width:34px; height:34px; border-radius:50%; background:#f3f0e6; color:#8a6d1f; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; flex-shrink:0; }
+.s-matricule{ font-family:monospace; font-size:11.5px; color:#9ca3af; }
+.btn-voir{ background:rgba(201,162,39,0.15); color:#a3801f; border:none; padding:6px 13px; border-radius:16px; font-size:12px; font-weight:600; cursor:pointer; text-decoration:none; }
+
+.pagination{ margin-top:20px; display:flex; justify-content:center; gap:8px; }
+.pagination a{ padding:6px 12px; background:#1f2937; color:white; border-radius:6px; text-decoration:none; font-size:14px; }
+.active-page{ background:#d4af37 !important; color:#111827 !important; font-weight:600; }
+
+/* MODAL */
+.modal-overlay{ position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); display:none; align-items:center; justify-content:center; z-index:1000; padding:20px; }
+.modal-overlay.open{ display:flex; }
+.modal-box{ background:white; border-radius:16px; width:760px; max-width:100%; max-height:90vh; overflow-y:auto; padding:28px 30px; }
+.modal-box h3{ color:#1f2937; font-size:19px; margin:0 0 18px; }
+.form-columns{ display:grid; grid-template-columns:1fr 1fr; gap:30px; }
+.form-section h4{ font-size:13px; text-transform:uppercase; letter-spacing:0.4px; color:#C9A227; margin:0 0 14px; border-bottom:1px solid #f0f0f0; padding-bottom:8px; }
+.form-row{ margin-bottom:12px; }
+.form-row label{ font-size:12.5px; font-weight:600; color:#1f2937; display:block; margin-bottom:5px; }
+.form-row input, .form-row select, .form-row textarea{ width:100%; padding:9px 11px; border:1px solid #ddd; border-radius:8px; font-size:13px; font-family:inherit; }
+.form-row input:focus, .form-row select:focus{ outline:none; border-color:#C9A227; }
+.form-grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.rtl-input{ direction:rtl; }
+
+.photo-preview{ width:72px; height:72px; border-radius:50%; background:#f3f4f6; display:flex; align-items:center; justify-content:center; margin-bottom:10px; overflow:hidden; border:2px dashed #ddd; font-size:24px; color:#9ca3af; }
+
+.phone-detect-note{ background:#fdf6e3; border:1px solid rgba(201,162,39,0.3); border-radius:8px; padding:9px 12px; font-size:11.5px; color:#8a6d1f; margin-top:6px; display:none; }
+.phone-detect-note.show{ display:block; }
+
+.modal-actions{ display:flex; gap:10px; margin-top:22px; grid-column:1/-1; }
+.btn-cancel{ background:none; border:1px solid #9ca3af; color:#6b7280; padding:11px 18px; border-radius:10px; font-size:13px; cursor:pointer; flex:1; }
+</style>
+</head>
+<body>
+<script>
+function toggleUserMenu(el){ el.nextElementSibling.classList.toggle('open'); }
+document.addEventListener('click', function(e){
+    if(!e.target.closest('.user-menu')){
+        document.querySelectorAll('.user-dropdown.open').forEach(d => d.classList.remove('open'));
+    }
+});
+function setLang(el){
+    el.closest('.lang-toggle').querySelectorAll('.lang-option').forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
+}
+</script>
+
+<div class="sidebar">
+    <h2 class="logo">Système <span>Scolaire</span></h2>
+    <ul>
+        <li><a href="admin_dashboard_preview.html">Tableau de bord</a></li>
+        <li><a href="admin_etudiants_preview.html" class="active">Étudiants</a></li>
+        <li><a href="#" title="Design à venir">Enseignants</a></li>
+        <li><a href="admin_classes_preview.html">Classes</a></li>
+        <li><a href="#" title="Design à venir">Parents</a></li>
+        <li><a href="paiements_vue_ensemble_preview.html">Paiements</a></li>
+    </ul>
+    <div class="sidebar-section-label">Direction <span class="director-badge">Directeur uniquement</span></div>
+    <ul>
+        <li><a href="admin_utilisateurs_preview.html">Utilisateurs</a></li>
+        <li><a href="admin_parametres_preview.html">Paramètres</a></li>
+        <li><a href="#" title="Design à venir">Journal d'activité</a></li>
+    </ul>
+</div>
+
+<div class="main-content">
+
+    <div class="topbar">
+        <div class="lang-toggle">
+            <span class="lang-option active" onclick="setLang(this)">FR</span>
+            <span class="lang-option" onclick="setLang(this)">ع</span>
+        </div>
+        <div class="user-menu">
+            <div class="user-trigger" onclick="toggleUserMenu(this)">
+                <div class="user-avatar">MA</div>
+                <div>
+                    <div class="user-name">Mohamed Abdellahi</div>
+                    <div class="user-role">Administrateur</div>
+                </div>
+                <span class="chevron">▼</span>
+            </div>
+            <div class="user-dropdown">
+                <a href="profile_preview.html">Mon profil</a>
+                <a href="login_preview.html" class="logout">Déconnexion</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-title">
+        <h1>Étudiants</h1>
+        <button class="btn-primary" onclick="document.getElementById('addStudentModal').classList.add('open')">+ Ajouter un élève</button>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active">Actifs</div>
+        <div class="tab">Archivés</div>
+    </div>
+
+    <div class="table-container">
+
+        <div class="table-controls">
+            <div class="search-input">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Rechercher par nom ou matricule...">
+            </div>
+            <select class="filter-select">
+                <option>Tous les niveaux</option>
+                <option>Primaire</option>
+                <option>Collège</option>
+                <option>Lycée</option>
+            </select>
+            <select class="filter-select">
+                <option>Toutes les classes</option>
+                <option>Terminale S2 — Bloc A</option>
+                <option>6ème A</option>
+                <option>CP2 — Section Bilingue</option>
+            </select>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Classe</th>
+                    <th>Parent</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td class="s-matricule">0142</td>
+                    <td class="s-row"><div class="s-avatar">FZ</div>Mint Mohamed Abdellahi</td>
+                    <td>Fatimetou Zahra</td>
+                    <td>Terminale S2 — Bloc A</td>
+                    <td>Mohamed Abdellahi Ould Cheikh Sidiya</td>
+                    <td><a href="#" class="btn-voir" title="Design à venir">Voir</a></td>
+                </tr>
+
+                <tr>
+                    <td class="s-matricule">0143</td>
+                    <td class="s-row"><div class="s-avatar">SM</div>Ould Abdellahi</td>
+                    <td>Sidi Mohamed</td>
+                    <td>6ème A</td>
+                    <td>Mohamed Abdellahi Ould Cheikh Sidiya</td>
+                    <td><a href="#" class="btn-voir" title="Design à venir">Voir</a></td>
+                </tr>
+
+                <tr>
+                    <td class="s-matricule">0201</td>
+                    <td class="s-row"><div class="s-avatar">IB</div>Ould Brahim Ould Abeidna Ould Taleb Moussa</td>
+                    <td>Isselmou</td>
+                    <td>5ème B</td>
+                    <td>Isselmou Ould Brahim Ould Abeidna Ould Taleb Moussa</td>
+                    <td><a href="#" class="btn-voir" title="Design à venir">Voir</a></td>
+                </tr>
+
+                <tr>
+                    <td class="s-matricule">0087</td>
+                    <td class="s-row"><div class="s-avatar">AD</div>Diallo</td>
+                    <td>Aminata</td>
+                    <td>CP2 — Section Bilingue</td>
+                    <td>Aminata Diallo</td>
+                    <td><a href="#" class="btn-voir" title="Design à venir">Voir</a></td>
+                </tr>
+
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            <a href="#" class="active-page">1</a>
+            <a href="#">2</a>
+            <a href="#">3</a>
+            <a href="#">…</a>
+            <a href="#">18</a>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ADD STUDENT MODAL — same field structure as the real add-student form, -->
+<!-- two columns: Étudiant / Parent, matching the codebase's existing logic -->
+<div class="modal-overlay" id="addStudentModal">
+    <div class="modal-box">
+        <h3>Ajouter un élève</h3>
+
+        <div class="form-columns">
+
+            <!-- ÉLÈVE -->
+            <div class="form-section">
+                <h4>Élève</h4>
+
+                <div class="photo-preview">📷</div>
+                <div class="form-row"><label>Photo</label><input type="file" accept="image/*"></div>
+
+                <div class="form-grid-2">
+                    <div class="form-row"><label>Nom</label><input type="text" placeholder="Ex : Mint Mohamed Abdellahi"></div>
+                    <div class="form-row"><label>Nom (arabe)</label><input type="text" class="rtl-input" placeholder="بنت محمد عبد الله"></div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-row"><label>Prénom</label><input type="text" placeholder="Ex : Fatimetou Zahra"></div>
+                    <div class="form-row"><label>Prénom (arabe)</label><input type="text" class="rtl-input" placeholder="فاطمة الزهراء"></div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-row"><label>Sexe</label><select><option>Choisir</option><option>Masculin</option><option>Féminin</option></select></div>
+                    <div class="form-row"><label>Date de naissance</label><input type="date"></div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-row"><label>Niveau</label><select onchange="document.getElementById('classeSelect').disabled=false"><option>Choisir un niveau</option><option>Primaire</option><option>Collège</option><option>Lycée</option></select></div>
+                    <div class="form-row"><label>Classe</label><select id="classeSelect"><option>Choisir un niveau d'abord</option></select></div>
+                </div>
+            </div>
+
+            <!-- PARENT — phone lookup pre-fills existing parent info to avoid duplicates -->
+            <div class="form-section">
+                <h4>Parent / Tuteur</h4>
+
+                <div class="form-row">
+                    <label>Téléphone</label>
+                    <input type="text" placeholder="+222 XX XX XX XX" oninput="checkExistingParent(this)">
+                    <div class="phone-detect-note" id="parentDetectNote">✓ Parent déjà existant trouvé — informations pré-remplies automatiquement.</div>
+                </div>
+                <div class="form-row"><label>Lien de parenté</label><select><option>Choisir</option><option>Père</option><option>Mère</option><option>Tuteur</option></select></div>
+                <div class="form-grid-2">
+                    <div class="form-row"><label>Nom du parent</label><input type="text" placeholder="Ex : Mohamed Abdellahi..."></div>
+                    <div class="form-row"><label>Nom (arabe)</label><input type="text" class="rtl-input" placeholder="محمد عبد الله..."></div>
+                </div>
+                <div class="form-row"><label>Email (optionnel)</label><input type="text" placeholder="exemple@email.com"></div>
+                <div class="form-row"><label>Adresse</label><textarea rows="2" placeholder="Adresse complète..."></textarea></div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="document.getElementById('addStudentModal').classList.remove('open')">Annuler</button>
+                <button class="btn-primary" style="flex:2;" onclick="document.getElementById('addStudentModal').classList.remove('open')">Enregistrer l'élève</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+// simulate the real app's phone-lookup: typing a known number shows the
+// "existing parent found" note so a sibling can be added without retyping
+// the parent's info
+function checkExistingParent(input){
+    let note = document.getElementById('parentDetectNote');
+    note.classList.toggle('show', input.value.trim().length >= 8);
+}
+document.getElementById('addStudentModal').addEventListener('click', function(e){
+    if(e.target === this) this.classList.remove('open');
+});
+</script>
+
+</body>
+</html>

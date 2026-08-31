@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Aperçu — Emploi du temps</title>
+<style>
+*{ box-sizing:border-box; }
+body{ margin:0; font-family:'Segoe UI', Arial, sans-serif; background:#f3f4f6; }
+
+.sidebar{ position:fixed; left:0; top:0; width:245px; height:100%; background:#1f2937; padding-top:20px; overflow-y:auto; }
+.logo{ color:white; text-align:center; font-size:22px; font-weight:700; margin-bottom:30px; letter-spacing:0.5px; padding-bottom:25px; border-bottom:1px solid rgba(255,255,255,0.1); }
+.logo span{ color:#C9A227; font-weight:600; }
+.sidebar ul{ list-style:none; padding-left:0; margin:0; }
+.sidebar ul li{ padding:10px 20px; }
+.sidebar ul li a{ text-decoration:none; color:#ddd; font-size:15px; display:block; border-radius:6px; padding:8px 10px; }
+.sidebar ul li a.active{ background:#C9A227; color:white; }
+
+.main-content{ margin-left:245px; padding:0 30px 30px; }
+.topbar{ display:flex; justify-content:space-between; align-items:center; padding:16px 0; margin-bottom:14px; border-bottom:1px solid #e5e7eb; }
+.lang-toggle{ display:flex; align-items:center; background:#f3f4f6; border-radius:20px; padding:3px; }
+.lang-option{ padding:6px 14px; border-radius:16px; font-size:12.5px; font-weight:700; color:#6b7280; cursor:pointer; }
+.lang-option.active{ background:#1f2937; color:#C9A227; }
+.user-menu{ position:relative; }
+.user-trigger{ display:flex; align-items:center; gap:10px; cursor:pointer; padding:6px 10px 6px 6px; border-radius:24px; }
+.user-trigger:hover{ background:#f3f4f6; }
+.user-avatar{ width:36px; height:36px; border-radius:50%; background:#1f2937; color:#C9A227; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; }
+.user-name{ font-size:13.5px; font-weight:600; color:#1f2937; }
+.user-role{ font-size:11px; color:#9ca3af; }
+.chevron{ font-size:10px; color:#9ca3af; margin-left:2px; }
+.user-dropdown{ display:none; position:absolute; right:0; top:52px; background:white; border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.15); width:200px; overflow:hidden; z-index:50; }
+.user-dropdown.open{ display:block; }
+.user-dropdown a{ display:flex; align-items:center; gap:10px; padding:12px 16px; font-size:13.5px; color:#374151; text-decoration:none; }
+.user-dropdown a:hover{ background:#f9fafb; }
+.user-dropdown a.logout{ color:#e53935; border-top:1px solid #f0f0f0; }
+
+.back-link{ font-size:13px; color:#9ca3af; text-decoration:none; display:inline-flex; align-items:center; gap:5px; margin-bottom:6px; }
+.back-link:hover{ color:#C9A227; }
+.page-title h1{ font-size:26px; font-weight:600; color:#1f2937; margin:0 0 20px; }
+
+/* WEEKLY GRID */
+.timetable{ background:white; border-radius:14px; padding:20px; overflow-x:auto; }
+table.tt{ width:100%; border-collapse:collapse; min-width:760px; }
+table.tt th{
+    background:#1f2937; color:white; padding:10px; font-size:12.5px; font-weight:600;
+    text-align:center; border:1px solid #2c3a4f;
+}
+table.tt th.time-col{ width:90px; background:#111827; }
+table.tt td{ border:1px solid #eee; padding:6px; vertical-align:top; height:64px; width:130px; }
+.tt-time{ font-size:11px; color:#6b7280; text-align:center; font-weight:600; }
+.tt-cell{
+    background:#fdf6e3; border-left:3px solid #C9A227; border-radius:6px;
+    padding:6px 8px; height:100%;
+}
+.tt-subject{ font-size:12px; font-weight:700; color:#1f2937; }
+.tt-classe{ font-size:10.5px; color:#8a6d1f; margin-top:1px; }
+
+/* PRINT — hide everything except the timetable itself, so a teacher can */
+/* save/print a clean copy to keep on their phone without opening the app */
+@media print{
+    .sidebar, .topbar, .back-link, .page-title button, #declareBtn, #declarePanel{ display:none !important; }
+    .main-content{ margin-left:0; padding:0; }
+    .timetable{ box-shadow:none; padding:0; }
+    body{ background:white; }
+}
+
+</style>
+</head>
+<body>
+<script>
+function toggleUserMenu(){ document.getElementById('userDropdown').classList.toggle('open'); }
+document.addEventListener('click', function(e){
+    if(!e.target.closest('.user-menu')){ document.getElementById('userDropdown').classList.remove('open'); }
+});
+function setLang(el){
+    document.querySelectorAll('.lang-option').forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
+}
+</script>
+
+<div class="sidebar">
+    <h2 class="logo">Système <span>Scolaire</span></h2>
+    <ul>
+        <li><a href="enseignant_dashboard_preview.html">Tableau de bord</a></li>
+        <li><a href="enseignant_classes_preview.html">Mes classes</a></li>
+        <li><a href="enseignant_emploi_preview.html" class="active">Emploi du temps</a></li>
+        <li><a href="enseignant_absences_preview.html">Absences</a></li>
+    </ul>
+</div>
+
+<div class="main-content">
+
+    <div class="topbar">
+        <div class="lang-toggle">
+            <span class="lang-option active" onclick="setLang(this)">FR</span>
+            <span class="lang-option" onclick="setLang(this)">ع</span>
+        </div>
+        <div class="user-menu">
+            <div class="user-trigger" onclick="toggleUserMenu()">
+                <div class="user-avatar">CV</div>
+                <div>
+                    <div class="user-name">Cheikh Ahmed Ould Mohamed Vall</div>
+                    <div class="user-role">Enseignant — Mathématiques</div>
+                </div>
+                <span class="chevron">▼</span>
+            </div>
+            <div class="user-dropdown" id="userDropdown">
+                <a href="#" title="Design à venir">Mon profil</a>
+                <a href="login_preview.html" class="logout">Déconnexion</a>
+            </div>
+        </div>
+    </div>
+
+    <a href="enseignant_dashboard_preview.html" class="back-link">← Tableau de bord</a>
+    <div class="page-title" style="display:flex;justify-content:space-between;align-items:center;">
+        <h1>Mon emploi du temps</h1>
+        <button onclick="window.print()" style="background:white;border:1px solid #ddd;color:#374151;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;">🖨 Imprimer / Enregistrer en PDF</button>
+    </div>
+
+    <div class="timetable">
+        <table class="tt">
+            <thead>
+                <tr>
+                    <th class="time-col">Heure</th>
+                    <th>Lundi</th>
+                    <th>Mardi</th>
+                    <th>Mercredi</th>
+                    <th>Jeudi</th>
+                    <th>Vendredi</th>
+                    <th>Samedi</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td class="tt-time">08:00<br>09:30</td>
+                    <td><div class="tt-cell"><div class="tt-subject">Mathématiques</div><div class="tt-classe">Terminale S2 — Bloc A</div></div></td>
+                    <td></td>
+                    <td><div class="tt-cell"><div class="tt-subject">Mathématiques</div><div class="tt-classe">6ème A</div></div></td>
+                    <td><div class="tt-cell"><div class="tt-subject">Mathématiques</div><div class="tt-classe">Terminale S2 — Bloc A</div></div></td>
+                    <td></td>
+                    <td><div class="tt-cell"><div class="tt-subject">Mathématiques</div><div class="tt-classe">5ème B</div></div></td>
+                </tr>
+
+                <tr>
+                    <td class="tt-time">10:00<br>11:30</td>
+                    <td><div class="tt-cell"><div class="tt-subject">Mathématiques</div><div class="tt-classe">Terminale S1</div></div></td>
+                    <td><div class="tt-cell"><div class="tt-subject">Mathématiques</div><div class="tt-classe">5ème B</div></div></td>
+                    <td></td>
+                    <td><div class="tt-cell"><div class="tt-subject">Mathématiques</div><div class="tt-classe">Terminale S1</div></div></td>
+                    <td><div class="tt-cell"><div class="tt-subject">Mathématiques</div><div class="tt-classe">6ème A</div></div></td>
+                    <td></td>
+                </tr>
+
+                <tr>
+                    <td class="tt-time">13:00<br>14:30</td>
+                    <td></td>
+                    <td><div class="tt-cell"><div class="tt-subject">Mathématiques</div><div class="tt-classe">CP2 — Section Bilingue</div></div></td>
+                    <td><div class="tt-cell"><div class="tt-subject">Mathématiques</div><div class="tt-classe">5ème B</div></div></td>
+                    <td><div class="tt-cell"><div class="tt-subject">Mathématiques</div><div class="tt-classe">6ème A</div></div></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+
+                <tr>
+                    <td class="tt-time">15:00<br>16:30</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td><div class="tt-cell"><div class="tt-subject">Mathématiques — Soutien</div><div class="tt-classe">CP2 — Section Bilingue</div></div></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+
+    <!-- SIGNALER UNE ABSENCE — lives here instead of the dashboard, since it's -->
+    <!-- literally the same class list as the timetable above. Click reveals -->
+    <!-- the panel below and scrolls to it, instead of navigating to a new page. -->
+    <div style="margin-top:20px;">
+        <button id="declareBtn" onclick="toggleDeclarePanel()" style="background:#fdeaea;color:#c62828;border:1px solid rgba(229,57,53,0.3);padding:12px 20px;border-radius:12px;font-size:13.5px;font-weight:700;cursor:pointer;">🚫 Signaler une absence</button>
+    </div>
+
+    <div id="declarePanel" style="display:none;margin-top:20px;">
+
+        <div style="background:#1f2937;border-radius:16px;padding:20px 24px;color:white;margin-bottom:18px;border-left:6px solid #C9A227;">
+            <h2 style="font-size:17px;margin:0 0 4px;">Signaler mon absence — Aujourd'hui</h2>
+            <p style="font-size:12px;color:#9ca3af;margin:0;">Jeudi 27 août 2026 — choisissez les séances où vous ne serez pas présent</p>
+        </div>
+
+        <div style="font-size:12.5px;color:#9ca3af;margin-bottom:14px;">Chaque séance est activée sur "Je viens" par défaut. Basculez uniquement celles où vous serez absent — vous pouvez très bien être absent le matin et présent l'après-midi.</div>
+
+        <div id="sessionList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+
+            <div class="session-item" data-classe="Terminale S2 — Bloc A" data-subject="Mathématiques" data-start="08:00" data-end="09:30" style="display:flex;align-items:center;gap:16px;background:white;border-radius:14px;padding:14px 18px;border-left:5px solid #2e7d32;">
+                <div style="width:82px;flex-shrink:0;text-align:center;"><div style="font-size:14px;font-weight:700;color:#1f2937;">08:00</div><div style="font-size:10.5px;color:#9ca3af;">→ 09:30</div></div>
+                <div style="flex:1;"><div style="font-size:14px;font-weight:700;color:#1f2937;">Mathématiques</div><div style="font-size:12px;color:#6b7280;margin-top:2px;">Terminale S2 — Bloc A</div></div>
+                <label class="dswitch"><input type="checkbox" onchange="toggleSession(this)"><span class="dswitch-track"></span></label>
+            </div>
+
+            <div class="session-item" data-classe="Terminale S1" data-subject="Mathématiques" data-start="10:00" data-end="11:30" style="display:flex;align-items:center;gap:16px;background:white;border-radius:14px;padding:14px 18px;border-left:5px solid #2e7d32;">
+                <div style="width:82px;flex-shrink:0;text-align:center;"><div style="font-size:14px;font-weight:700;color:#1f2937;">10:00</div><div style="font-size:10.5px;color:#9ca3af;">→ 11:30</div></div>
+                <div style="flex:1;"><div style="font-size:14px;font-weight:700;color:#1f2937;">Mathématiques</div><div style="font-size:12px;color:#6b7280;margin-top:2px;">Terminale S1</div></div>
+                <label class="dswitch"><input type="checkbox" onchange="toggleSession(this)"><span class="dswitch-track"></span></label>
+            </div>
+
+            <div class="session-item" data-classe="6ème A" data-subject="Mathématiques" data-start="13:00" data-end="14:30" style="display:flex;align-items:center;gap:16px;background:white;border-radius:14px;padding:14px 18px;border-left:5px solid #2e7d32;">
+                <div style="width:82px;flex-shrink:0;text-align:center;"><div style="font-size:14px;font-weight:700;color:#1f2937;">13:00</div><div style="font-size:10.5px;color:#9ca3af;">→ 14:30</div></div>
+                <div style="flex:1;"><div style="font-size:14px;font-weight:700;color:#1f2937;">Mathématiques</div><div style="font-size:12px;color:#6b7280;margin-top:2px;">6ème A</div></div>
+                <label class="dswitch"><input type="checkbox" onchange="toggleSession(this)"><span class="dswitch-track"></span></label>
+            </div>
+
+            <div class="session-item" data-classe="CP2 — Section Bilingue" data-subject="Mathématiques — Soutien" data-start="15:00" data-end="16:30" style="display:flex;align-items:center;gap:16px;background:white;border-radius:14px;padding:14px 18px;border-left:5px solid #2e7d32;">
+                <div style="width:82px;flex-shrink:0;text-align:center;"><div style="font-size:14px;font-weight:700;color:#1f2937;">15:00</div><div style="font-size:10.5px;color:#9ca3af;">→ 16:30</div></div>
+                <div style="flex:1;"><div style="font-size:14px;font-weight:700;color:#1f2937;">Mathématiques — Soutien</div><div style="font-size:12px;color:#6b7280;margin-top:2px;">CP2 — Section Bilingue</div></div>
+                <label class="dswitch"><input type="checkbox" onchange="toggleSession(this)"><span class="dswitch-track"></span></label>
+            </div>
+
+        </div>
+
+        <div class="reason-field" style="margin-bottom:14px;">
+            <label style="font-size:12.5px;font-weight:600;color:#1f2937;display:block;margin-bottom:6px;">Raison (optionnel — sera incluse dans le message envoyé)</label>
+            <textarea id="declareReason" placeholder="Ex : rendez-vous médical, empêchement personnel..." style="width:100%;border:1px solid #ddd;border-radius:10px;padding:10px;font-size:13px;font-family:inherit;resize:vertical;min-height:50px;"></textarea>
+        </div>
+
+        <div style="background:#fdf6e3;border:1px solid rgba(201,162,39,0.3);border-radius:10px;padding:12px 14px;font-size:12px;color:#8a6d1f;margin-bottom:18px;" id="declareInfoNote">
+            📩 Cette déclaration notifiera <b>l'administration</b> et <b>les parents des élèves concernés</b> uniquement — les autres enseignants ne seront pas informés.
+        </div>
+
+        <button id="submitDeclareBtn" disabled onclick="submitDeclare()" style="width:100%;background:#e5e7eb;color:#9ca3af;border:none;padding:14px;border-radius:12px;font-size:14px;font-weight:700;cursor:not-allowed;">Sélectionnez au moins une séance</button>
+
+        <!-- DECLARED SESSIONS — separate from the toggle list above. Only the -->
+        <!-- sessions the teacher actually confirmed show up here, each with -->
+        <!-- its own undo, since plans can change again after submitting. -->
+        <div id="declaredSection" style="display:none;margin-top:24px;">
+            <div style="font-size:13px;font-weight:700;color:#1f2937;margin-bottom:10px;">Vos absences déclarées aujourd'hui</div>
+            <div id="declaredList" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+
+        <div id="allClearMsg" style="display:none;text-align:center;background:white;border-radius:14px;padding:20px;margin-top:14px;font-size:13px;color:#6b7280;">
+            Aucune absence déclarée pour aujourd'hui — toutes vos séances sont à "Je viens".
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+.dswitch{ position:relative; width:96px; height:34px; flex-shrink:0; }
+.dswitch input{ opacity:0; width:0; height:0; }
+.dswitch-track{ position:absolute; inset:0; background:#2e7d32; border-radius:20px; cursor:pointer; transition:background 0.2s; display:flex; align-items:center; justify-content:flex-start; padding:0 10px; font-size:11px; font-weight:700; color:white; }
+.dswitch input:checked + .dswitch-track{ background:#e53935; justify-content:flex-end; }
+.dswitch-track::after{ content:"Je viens"; }
+.dswitch input:checked + .dswitch-track::after{ content:"Absent"; }
+
+.declared-card{ display:flex; align-items:center; gap:14px; background:white; border-radius:12px; padding:12px 16px; border-left:4px solid #e53935; }
+.declared-card .dc-info{ flex:1; }
+.declared-card .dc-subject{ font-size:13px; font-weight:700; color:#1f2937; }
+.declared-card .dc-meta{ font-size:11px; color:#9ca3af; margin-top:1px; }
+.declared-card .dc-status{ font-size:10.5px; font-weight:700; color:#e53935; text-transform:uppercase; letter-spacing:0.3px; margin-top:3px; }
+.btn-undo{ background:#f3f4f6; color:#374151; border:none; padding:8px 14px; border-radius:10px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; }
+.btn-undo:hover{ background:#e5e7eb; }
+.undo-toast{ font-size:11px; color:#2e7d32; font-weight:600; padding:4px 0 0; display:none; }
+</style>
+
+<script>
+// Keep full session info so we can rebuild a toggle item exactly when undoing
+const sessionData = {};
+document.querySelectorAll('#sessionList .session-item').forEach(item => {
+    sessionData[item.dataset.classe] = {
+        classe: item.dataset.classe,
+        subject: item.dataset.subject,
+        start: item.dataset.start,
+        end: item.dataset.end
+    };
+});
+
+function toggleDeclarePanel(){
+    let panel = document.getElementById('declarePanel');
+    let opening = panel.style.display === 'none';
+    panel.style.display = opening ? 'block' : 'none';
+    if(opening){
+        panel.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+}
+
+function toggleSession(input){
+    let item = input.closest('.session-item');
+    item.style.borderLeftColor = input.checked ? '#e53935' : '#2e7d32';
+    updateDeclareButton();
+}
+
+function updateDeclareButton(){
+    let n = document.querySelectorAll('#sessionList .session-item input:checked').length;
+    let btn = document.getElementById('submitDeclareBtn');
+    if(n === 0){
+        btn.disabled = true;
+        btn.style.background = '#e5e7eb'; btn.style.color = '#9ca3af'; btn.style.cursor = 'not-allowed';
+        btn.textContent = 'Sélectionnez au moins une séance';
+    } else {
+        btn.disabled = false;
+        btn.style.background = '#d4af37'; btn.style.color = '#111827'; btn.style.cursor = 'pointer';
+        btn.textContent = `Confirmer mon absence pour ${n} séance${n>1?'s':''}`;
+    }
+}
+
+function buildSessionItemHTML(data){
+    return `
+        <div style="width:82px;flex-shrink:0;text-align:center;"><div style="font-size:14px;font-weight:700;color:#1f2937;">${data.start}</div><div style="font-size:10.5px;color:#9ca3af;">→ ${data.end}</div></div>
+        <div style="flex:1;"><div style="font-size:14px;font-weight:700;color:#1f2937;">${data.subject}</div><div style="font-size:12px;color:#6b7280;margin-top:2px;">${data.classe}</div></div>
+        <label class="dswitch"><input type="checkbox" onchange="toggleSession(this)"><span class="dswitch-track"></span></label>
+    `;
+}
+
+function submitDeclare(){
+    let checked = document.querySelectorAll('#sessionList .session-item input:checked');
+    let reason = document.getElementById('declareReason').value.trim();
+
+    checked.forEach(cb => {
+        let item = cb.closest('.session-item');
+        let classe = item.dataset.classe;
+        addDeclaredCard(classe, reason);
+        item.remove(); // now managed from the declared list below, not the toggle list
+    });
+
+    document.getElementById('declareReason').value = '';
+    document.getElementById('allClearMsg').style.display = 'none';
+    updateDeclareButton();
+
+    if(document.querySelectorAll('#sessionList .session-item').length === 0){
+        document.getElementById('sessionList').style.display = 'none';
+        document.getElementById('declareInfoNote').style.display = 'none';
+        document.querySelector('.reason-field').style.display = 'none';
+        document.getElementById('submitDeclareBtn').style.display = 'none';
+    }
+}
+
+function addDeclaredCard(classe, reason){
+    let data = sessionData[classe];
+    let reasonLine = reason ? `<div class="dc-reason">"${reason}"</div>` : '';
+    let card = document.createElement('div');
+    card.className = 'declared-card';
+    card.dataset.classe = classe;
+    card.innerHTML = `
+        <div class="dc-info">
+            <div class="dc-subject">${data.subject} — ${data.start} → ${data.end}</div>
+            <div class="dc-meta">${data.classe}</div>
+            <div class="dc-status">Absent — message envoyé : "${data.subject.split(' — ')[0]} n'est pas disponible aujourd'hui pour ${data.classe}"</div>
+            ${reasonLine}
+        </div>
+        <div>
+            <button class="btn-undo" onclick="undoDeclared(this)">↩ Je viens finalement</button>
+            <div class="undo-toast">Message envoyé : "finalement disponible" ✓</div>
+        </div>
+    `;
+    document.getElementById('declaredSection').style.display = 'block';
+    document.getElementById('declaredList').appendChild(card);
+}
+
+function undoDeclared(btn){
+    let card = btn.closest('.declared-card');
+    let classe = card.dataset.classe;
+    let toast = card.querySelector('.undo-toast');
+
+    btn.style.display = 'none';
+    toast.style.display = 'block';
+    card.style.borderLeftColor = '#2e7d32';
+    card.querySelector('.dc-status').textContent = 'Annulé — nouveau message envoyé : "finalement disponible aujourd\'hui"';
+    card.querySelector('.dc-status').style.color = '#2e7d32';
+
+    // after a short pause, remove the declared card and put the session
+    // back into the open toggle list, unchecked — exactly where it started
+    setTimeout(() => {
+        card.style.transition = 'opacity 0.3s';
+        card.style.opacity = '0';
+        setTimeout(() => {
+            card.remove();
+            restoreSessionToList(classe);
+            if(document.querySelectorAll('.declared-card').length === 0){
+                document.getElementById('declaredSection').style.display = 'none';
+            }
+        }, 300);
+    }, 1500);
+}
+
+function restoreSessionToList(classe){
+    let data = sessionData[classe];
+    let list = document.getElementById('sessionList');
+
+    // if the toggle list had been fully hidden (all sessions had been
+    // declared), bring the whole section back
+    list.style.display = 'flex';
+    document.getElementById('declareInfoNote').style.display = 'block';
+    document.querySelector('.reason-field').style.display = 'block';
+    document.getElementById('submitDeclareBtn').style.display = 'block';
+
+    let item = document.createElement('div');
+    item.className = 'session-item';
+    item.dataset.classe = data.classe;
+    item.dataset.subject = data.subject;
+    item.dataset.start = data.start;
+    item.dataset.end = data.end;
+    item.style.cssText = 'display:flex;align-items:center;gap:16px;background:white;border-radius:14px;padding:14px 18px;border-left:5px solid #2e7d32;';
+    item.innerHTML = buildSessionItemHTML(data);
+
+    // re-insert in the original time order rather than just appending at the end
+    let items = [...list.children];
+    let inserted = false;
+    for(let existing of items){
+        if(existing.dataset.start > data.start){
+            list.insertBefore(item, existing);
+            inserted = true;
+            break;
+        }
+    }
+    if(!inserted) list.appendChild(item);
+
+    updateDeclareButton();
+}
+</script>
+
+<style>
+.declared-card .dc-reason{ font-size:11.5px; color:#8a6d1f; font-style:italic; margin-top:4px; }
+</style>
+
+</body>
+</html>
