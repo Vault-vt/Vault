@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Aperçu — Paramètres (Direction)</title>
+<style>
+:root{
+    /* These two variables are the single source of truth for the school's
+       brand colors — change them here and everything referencing them
+       repaints instantly, everywhere, with no hunting through files. */
+    --color-bg: #1f2937;
+    --color-accent: #C9A227;
+}
+*{ box-sizing:border-box; }
+body{ margin:0; font-family:'Segoe UI', Arial, sans-serif; background:#f3f4f6; }
+
+.sidebar{ position:fixed; left:0; top:0; width:245px; height:100%; background:var(--color-bg); padding-top:20px; overflow-y:auto; transition:background 0.4s; }
+.logo{ color:white; text-align:center; font-size:22px; font-weight:700; margin-bottom:30px; letter-spacing:0.5px; padding-bottom:25px; border-bottom:1px solid rgba(255,255,255,0.1); }
+.logo span{ color:var(--color-accent); font-weight:600; transition:color 0.4s; }
+.sidebar ul{ list-style:none; padding-left:0; margin:0; }
+.sidebar ul li{ padding:10px 20px; }
+.sidebar ul li a{ text-decoration:none; color:#ddd; font-size:15px; display:block; border-radius:6px; padding:8px 10px; }
+.sidebar ul li a.active{ background:var(--color-accent); color:white; transition:background 0.4s; }
+.sidebar-section-label{ padding:14px 20px 6px; font-size:10.5px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:6px; }
+.director-badge{ background:color-mix(in srgb, var(--color-accent) 20%, transparent); color:var(--color-accent); font-size:9px; font-weight:700; padding:2px 6px; border-radius:6px; text-transform:none; letter-spacing:0; transition:color 0.4s; }
+
+.main-content{ margin-left:245px; padding:0 30px 30px; max-width:760px; }
+.back-link{ font-size:13px; color:#9ca3af; text-decoration:none; display:inline-flex; align-items:center; gap:5px; margin:20px 0 10px; }
+.back-link:hover{ color:#C9A227; }
+.page-title h1{ font-size:26px; font-weight:600; color:#1f2937; margin:0 0 4px; }
+.page-title .sub{ font-size:12.5px; color:#9ca3af; margin-bottom:22px; }
+
+/* SETTINGS SECTIONS */
+.settings-section{ background:white; border-radius:14px; padding:22px 24px; margin-bottom:18px; }
+.settings-section h3{ font-size:15px; font-weight:700; color:#1f2937; margin:0 0 4px; }
+.settings-section .desc{ font-size:12px; color:#9ca3af; margin-bottom:18px; }
+
+.form-row{ margin-bottom:14px; }
+.form-row label{ font-size:13px; font-weight:600; color:#1f2937; display:block; margin-bottom:6px; }
+.form-row input, .form-row select{ width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:10px; font-size:13.5px; font-family:inherit; }
+.form-row input:focus, .form-row select:focus{ outline:none; border-color:#C9A227; }
+.form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+
+.status-pill{ display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; padding:5px 12px; border-radius:14px; }
+.status-pill.connected{ background:rgba(46,125,50,0.1); color:#2e7d32; }
+.status-pill.disconnected{ background:rgba(229,57,53,0.1); color:#e53935; }
+.status-dot{ width:7px; height:7px; border-radius:50%; background:currentColor; }
+
+.btn-primary{ background:var(--color-accent); color:#111827; border:none; padding:11px 20px; border-radius:10px; font-size:13.5px; font-weight:700; cursor:pointer; transition:background 0.4s; }
+.btn-danger{ background:#fdeaea; color:#c62828; border:1px solid rgba(229,57,53,0.3); padding:11px 20px; border-radius:10px; font-size:13.5px; font-weight:700; cursor:pointer; }
+.btn-outline{ background:white; border:1px solid #ddd; color:#374151; padding:10px 18px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; }
+
+.year-rollover-box{ background:#fdf6e3; border:1px solid rgba(201,162,39,0.3); border-radius:10px; padding:14px 16px; font-size:12.5px; color:#8a6d1f; margin-top:14px; }
+
+.color-row{ display:flex; gap:14px; align-items:center; margin-top:6px; }
+.color-swatch{ width:40px; height:40px; border-radius:10px; border:2px solid white; box-shadow:0 0 0 1px #ddd; }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2 class="logo">Système <span>Scolaire</span></h2>
+    <ul>
+        <li><a href="admin_dashboard_preview.html">Tableau de bord</a></li>
+        <li><a href="#" title="Design à venir">Étudiants</a></li>
+        <li><a href="#" title="Design à venir">Enseignants</a></li>
+        <li><a href="#" title="Design à venir">Parents</a></li>
+        <li>
+            <a href="paiements_vue_ensemble_preview.html">Paiements</a>
+        </li>
+    </ul>
+    <div class="sidebar-section-label">Direction <span class="director-badge">Directeur uniquement</span></div>
+    <ul>
+        <li><a href="admin_utilisateurs_preview.html">Utilisateurs</a></li>
+        <li><a href="admin_parametres_preview.html" class="active">Paramètres</a></li>
+        <li><a href="#" title="Design à venir">Journal d'activité</a></li>
+    </ul>
+</div>
+
+<div class="main-content">
+
+    <a href="admin_dashboard_preview.html" class="back-link">← Tableau de bord</a>
+    <div class="page-title">
+        <h1>Paramètres</h1>
+        <div class="sub">Configuration générale de l'école — visible uniquement par le Directeur</div>
+    </div>
+
+    <!-- SCHOOL INFO -->
+    <div class="settings-section">
+        <h3>Informations de l'école</h3>
+        <div class="desc">Ces informations apparaissent sur les reçus, bulletins et documents imprimés.</div>
+        <div class="form-grid">
+            <div class="form-row"><label>Nom de l'école</label><input type="text" value="Complexe Scolaire Al Amal"></div>
+            <div class="form-row"><label>Téléphone</label><input type="text" value="+222 45 25 30 10"></div>
+        </div>
+        <div class="form-row"><label>Adresse</label><input type="text" value="Tevragh Zeina, Nouakchott, Mauritanie"></div>
+        <button class="btn-outline">Enregistrer</button>
+    </div>
+
+    <!-- SCHOOL YEAR -->
+    <div class="settings-section">
+        <h3>Année scolaire</h3>
+        <div class="desc">Gère le passage d'une année scolaire à l'autre — nouvelles classes, élèves promus.</div>
+        <div class="form-row"><label>Année en cours</label><input type="text" value="2025-2026" style="max-width:200px;"></div>
+        <div class="year-rollover-box">
+            ⚠️ Le passage à l'année 2026-2027 est une opération importante : elle archive l'année actuelle et prépare les nouvelles classes. Cette action ne peut être faite que par le Directeur.
+        </div>
+        <div style="margin-top:14px;"><button class="btn-danger">Démarrer la nouvelle année scolaire</button></div>
+    </div>
+
+    <!-- WHATSAPP -->
+    <div class="settings-section">
+        <h3>WhatsApp Business API</h3>
+        <div class="desc">Utilisé pour les rappels de paiement et les notifications d'absence enseignant.</div>
+        <div style="margin-bottom:14px;"><span class="status-pill disconnected"><span class="status-dot"></span> Non connecté</span></div>
+        <div class="form-row"><label>Fournisseur</label><input type="text" value="360dialog" disabled style="background:#f9fafb;color:#9ca3af;"></div>
+        <div class="form-row"><label>Clé API</label><input type="password" placeholder="Coller la clé API ici..."></div>
+        <div class="form-row"><label>Numéro WhatsApp de l'école</label><input type="text" placeholder="+222 XX XX XX XX"></div>
+        <button class="btn-primary">Connecter WhatsApp</button>
+    </div>
+
+    <!-- APPEARANCE — each school picks its own two colors, since each -->
+    <!-- gets its own deployment. Applies everywhere, including receipts. -->
+    <div class="settings-section">
+        <h3>Apparence</h3>
+        <div class="desc">Choisissez les deux couleurs de votre école — utilisées dans toute l'application et sur les documents imprimés.</div>
+
+        <div class="color-picker-row">
+            <div class="color-picker-item">
+                <label>Fond (sidebar, en-têtes)</label>
+                <div class="color-input-wrap">
+                    <input type="color" id="colorBg" value="#1f2937" oninput="updatePreview()">
+                    <span class="color-hex" id="colorBgHex">#1f2937</span>
+                </div>
+            </div>
+            <div class="color-picker-item">
+                <label>Accent (boutons, liens actifs)</label>
+                <div class="color-input-wrap">
+                    <input type="color" id="colorAccent" value="#C9A227" oninput="updatePreview()">
+                    <span class="color-hex" id="colorAccentHex">#C9A227</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PRESET PALETTES — quick starting points for schools that don't -->
+        <!-- want to pick a custom color from scratch -->
+        <div class="presets-label">Palettes suggérées</div>
+        <div class="presets-row">
+            <div class="preset-swatch" onclick="applyPreset('#1f2937','#C9A227')" style="background:linear-gradient(135deg,#1f2937 50%,#C9A227 50%);" title="Navy & Or"></div>
+            <div class="preset-swatch" onclick="applyPreset('#0f3d2e','#c0c0c0')" style="background:linear-gradient(135deg,#0f3d2e 50%,#c0c0c0 50%);" title="Vert & Argent"></div>
+            <div class="preset-swatch" onclick="applyPreset('#1a1a2e','#e94560')" style="background:linear-gradient(135deg,#1a1a2e 50%,#e94560 50%);" title="Marine & Corail"></div>
+            <div class="preset-swatch" onclick="applyPreset('#3d1f1f','#d4af37')" style="background:linear-gradient(135deg,#3d1f1f 50%,#d4af37 50%);" title="Bordeaux & Or"></div>
+            <div class="preset-swatch" onclick="applyPreset('#1e3a5f','#4fd1c5')" style="background:linear-gradient(135deg,#1e3a5f 50%,#4fd1c5 50%);" title="Bleu & Turquoise"></div>
+        </div>
+
+        <!-- LIVE PREVIEW -->
+        <div class="presets-label" style="margin-top:20px;">Aperçu</div>
+        <div class="preview-box" id="previewBox">
+            <div class="preview-sidebar" id="previewSidebar">
+                <div class="preview-logo">École</div>
+                <div class="preview-link active" id="previewLinkActive">Tableau de bord</div>
+                <div class="preview-link">Paiements</div>
+            </div>
+            <div class="preview-main">
+                <button class="preview-btn" id="previewBtn">Enregistrer</button>
+                <div class="preview-card" id="previewCard">
+                    <div style="font-size:11px;color:#9ca3af;">Élèves actifs</div>
+                    <div style="font-size:18px;font-weight:700;color:#1f2937;">418</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-primary" style="margin-top:16px;" onclick="applyToRealPage()">Appliquer ces couleurs</button>
+        <div id="applyConfirm" style="display:none;font-size:12px;color:#2e7d32;font-weight:600;margin-top:10px;">✓ Couleurs appliquées — regardez la barre latérale !</div>
+    </div>
+
+</div>
+
+<style>
+.color-picker-row{ display:flex; gap:24px; margin-bottom:18px; flex-wrap:wrap; }
+.color-picker-item label{ font-size:12px; font-weight:600; color:#1f2937; display:block; margin-bottom:8px; }
+.color-input-wrap{ display:flex; align-items:center; gap:10px; }
+.color-input-wrap input[type=color]{ width:48px; height:48px; border:2px solid white; box-shadow:0 0 0 1px #ddd; border-radius:10px; cursor:pointer; padding:0; }
+.color-hex{ font-size:13px; font-weight:600; color:#374151; font-family:monospace; }
+
+.presets-label{ font-size:11.5px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:8px; }
+.presets-row{ display:flex; gap:10px; }
+.preset-swatch{ width:36px; height:36px; border-radius:50%; cursor:pointer; border:2px solid white; box-shadow:0 0 0 1px #ddd; transition:transform 0.15s; }
+.preset-swatch:hover{ transform:scale(1.1); }
+
+.preview-box{ display:flex; border-radius:12px; overflow:hidden; border:1px solid #eee; height:150px; }
+.preview-sidebar{ width:140px; padding:14px 10px; transition:background 0.2s; }
+.preview-logo{ color:white; font-size:12px; font-weight:700; margin-bottom:14px; text-align:center; }
+.preview-link{ color:#ddd; font-size:11px; padding:7px 8px; border-radius:6px; margin-bottom:4px; transition:background 0.2s, color 0.2s; }
+.preview-link.active{ font-weight:700; }
+.preview-main{ flex:1; background:#f9fafb; padding:16px; }
+.preview-btn{ border:none; padding:8px 16px; border-radius:8px; font-size:11.5px; font-weight:700; cursor:default; margin-bottom:14px; transition:background 0.2s, color 0.2s; }
+.preview-card{ background:white; border-radius:8px; padding:12px; border-left:3px solid; transition:border-color 0.2s; width:120px; }
+</style>
+
+<script>
+function updatePreview(){
+    let bg = document.getElementById('colorBg').value;
+    let accent = document.getElementById('colorAccent').value;
+
+    document.getElementById('colorBgHex').textContent = bg;
+    document.getElementById('colorAccentHex').textContent = accent;
+
+    document.getElementById('previewSidebar').style.background = bg;
+    document.getElementById('previewLinkActive').style.background = accent;
+    document.getElementById('previewLinkActive').style.color = 'white';
+    document.getElementById('previewBtn').style.background = accent;
+    document.getElementById('previewBtn').style.color = '#111827';
+    document.getElementById('previewCard').style.borderLeftColor = accent;
+
+    // Live-apply to the REAL page too — this is the actual sidebar you see
+    // on the left, not just the small preview box. No separate click needed.
+    document.documentElement.style.setProperty('--color-bg', bg);
+    document.documentElement.style.setProperty('--color-accent', accent);
+}
+
+function applyPreset(bg, accent){
+    document.getElementById('colorBg').value = bg;
+    document.getElementById('colorAccent').value = accent;
+    updatePreview();
+}
+
+// "Appliquer" now just confirms/saves — the live repaint already happened
+// as soon as a color was picked, via updatePreview() above.
+function applyToRealPage(){
+    let confirm = document.getElementById('applyConfirm');
+    confirm.style.display = 'block';
+    setTimeout(() => confirm.style.display = 'none', 3000);
+}
+
+updatePreview(); // initial paint on load
+</script>
+
+
+</body>
+</html>
