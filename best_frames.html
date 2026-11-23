@@ -167,7 +167,7 @@ function applyLang() {
   document.querySelectorAll("[data-i]").forEach(el => { el.textContent = t(el.dataset.i); });
   $("langBtn").textContent = lang === "ar" ? "Français" : "العربية";
   updateBar();
-  if (frames.length) $("bestTag").textContent = "⭐ " + t("best") + " · " + pct(frames[0]) + "%";
+  if (frames.length) $("bestTag").textContent = "⭐ " + t("best") + " · \u200E" + pct(frames[0]) + "%\u200E";
 }
 $("langBtn").onclick = () => { lang = lang === "ar" ? "fr" : "ar"; applyLang(); };
 
@@ -225,11 +225,19 @@ function analyze(source, vw, vh) {
   // الحدة: تباين لابلاس لكل مربع صغير، ثم متوسط أوضح 30% من المربعات
   // (هكذا لا تُظلم الصورة التي فيها جدار فارغ وموضوع واضح)
   const tl = new Float64Array(GRID * GRID), tl2 = new Float64Array(GRID * GRID), tc = new Float64Array(GRID * GRID);
+  // تنعيم خفيف (3×3) لإزالة الحبيبات قبل قياس الحدة
+  const gb = new Float32Array(w * h);
   for (let y = 1; y < h - 1; y++) {
-    const ty = Math.min(GRID - 1, Math.floor(y * GRID / h));
     for (let x = 1; x < w - 1; x++) {
       const p = y * w + x;
-      const l = 4 * g[p] - g[p - 1] - g[p + 1] - g[p - w] - g[p + w];
+      gb[p] = (g[p - w - 1] + g[p - w] + g[p - w + 1] + g[p - 1] + g[p] + g[p + 1] + g[p + w - 1] + g[p + w] + g[p + w + 1]) / 9;
+    }
+  }
+  for (let y = 2; y < h - 2; y++) {
+    const ty = Math.min(GRID - 1, Math.floor(y * GRID / h));
+    for (let x = 2; x < w - 2; x++) {
+      const p = y * w + x;
+      const l = 4 * gb[p] - gb[p - 1] - gb[p + 1] - gb[p - w] - gb[p + w];
       const k = ty * GRID + Math.min(GRID - 1, Math.floor(x * GRID / w));
       tl[k] += l; tl2[k] += l * l; tc[k]++;
     }
@@ -238,7 +246,9 @@ function analyze(source, vw, vh) {
   for (let k = 0; k < GRID * GRID; k++) if (tc[k]) { const m = tl[k] / tc[k]; vars.push(tl2[k] / tc[k] - m * m); }
   vars.sort((a, b) => b - a);
   const top = vars.slice(0, Math.max(1, Math.round(vars.length * 0.3)));
-  const sharp = top.reduce((a, b) => a + b, 0) / top.length;
+  // نطرح مستوى «التشويش» (أهدأ المربعات) حتى لا تُعدّ الحبيبات حدّة
+  const floor = vars[Math.floor(vars.length * 0.85)];
+  const sharp = Math.max(0, top.reduce((a, b) => a + b, 0) / top.length - floor);
 
   let expo = 1 - Math.abs(mean - 125) / 125;
   expo = Math.max(0, Math.min(1, expo)) * (1 - Math.min(1, (clip / n) * 2));
