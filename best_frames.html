@@ -2,84 +2,111 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>أفضل الصور من الفيديو</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;background:#f4f5f7;color:#1b1f24}
-.wrap{max-width:960px;margin:0 auto;padding:16px}
-header{display:flex;justify-content:space-between;align-items:center;gap:8px}
-h1{font-size:20px;margin:0}
-button,select{font:inherit;border-radius:10px;border:1px solid #cfd4da;background:#fff;padding:10px 14px;cursor:pointer}
-button.main{background:#1f6feb;color:#fff;border-color:#1f6feb}
-button:disabled{opacity:.5;cursor:default}
-.card{background:#fff;border-radius:14px;padding:14px;margin-top:14px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.drop{border:2px dashed #aab2bb;border-radius:14px;padding:26px;text-align:center;cursor:pointer;color:#555}
-.bar{height:8px;background:#e3e6ea;border-radius:8px;overflow:hidden;margin-top:10px}
-.bar i{display:block;height:100%;width:0;background:#1f6feb;transition:width .1s}
-.best img{width:100%;border-radius:12px;display:block}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-.thumb{position:relative;border-radius:10px;overflow:hidden;border:3px solid transparent;cursor:pointer;background:#000}
-.thumb img{width:100%;display:block;aspect-ratio:16/10;object-fit:cover}
-.thumb.sel{border-color:#1f6feb}
-.thumb .chk{position:absolute;top:6px;inset-inline-start:6px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px}
-.thumb.sel .chk{background:#1f6feb}
-.thumb .info{position:absolute;bottom:0;inset-inline:0;background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff;font-size:12px;padding:14px 6px 4px;display:flex;justify-content:space-between}
-.badge{position:absolute;top:6px;inset-inline-end:6px;background:#f5b400;color:#222;font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px}
-.hint{color:#666;font-size:14px}
-.hidden{display:none}
+:root{--bg:#f6f7f9;--ink:#14181f;--mute:#6b7380;--line:#e6e9ee;--blue:#2563eb;--gold:#f5b301}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;line-height:1.5}
+.wrap{max-width:860px;margin:0 auto;padding:18px 16px 40px}
+.wrap.has-bar{padding-bottom:110px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+h1{font-size:22px;margin:0;font-weight:800}
+.pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font:inherit;font-size:14px;color:var(--ink);cursor:pointer}
+.card{background:#fff;border-radius:20px;padding:16px;margin-top:14px;box-shadow:0 1px 2px rgba(16,24,40,.04),0 4px 16px rgba(16,24,40,.05)}
+.drop{display:flex;flex-direction:column;align-items:center;gap:4px;padding:28px 12px;border-radius:16px;background:#f3f6ff;border:1.5px dashed #b9c8ff;cursor:pointer;text-align:center}
+.drop .ic{font-size:34px;line-height:1.2}
+.drop b{font-size:17px}
+.drop small{color:var(--mute);font-size:13px}
+.fname{font-size:13px;color:var(--blue);word-break:break-all;margin-top:4px}
+.label{font-size:14px;color:var(--mute);margin:16px 0 8px}
+.seg{display:flex;background:#eef0f4;border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:transparent;font:inherit;font-size:15px;padding:9px 4px;border-radius:10px;color:var(--mute);cursor:pointer}
+.seg button.on{background:#fff;color:var(--ink);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.primary{width:100%;margin-top:16px;border:0;background:var(--blue);color:#fff;font:inherit;font-weight:700;font-size:17px;padding:14px;border-radius:14px;cursor:pointer}
+.primary:disabled{background:#b8c6ee;cursor:default}
+.prog{height:8px;background:#e6e9ee;border-radius:8px;overflow:hidden;margin-top:14px}
+.prog i{display:block;height:100%;width:0;background:var(--blue);transition:width .1s}
+.status{color:var(--mute);font-size:14px;margin-top:8px;min-height:20px}
+.hidden{display:none!important}
+.sec-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sec-title b{font-size:17px}
+.hero{position:relative;border-radius:16px;overflow:hidden;background:#e9ecf1}
+.hero img{width:100%;display:block}
+.tag{position:absolute;top:10px;inset-inline-start:10px;background:var(--gold);color:#2b2100;font-weight:800;font-size:13px;padding:5px 12px;border-radius:999px}
+.ghost{width:100%;margin-top:12px;border:1px solid var(--line);background:#fff;font:inherit;font-weight:600;padding:12px;border-radius:12px;cursor:pointer;color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+@media(min-width:640px){.grid{grid-template-columns:repeat(4,1fr)}}
+.thumb{position:relative;border-radius:14px;overflow:hidden;background:#e9ecf1;cursor:pointer;box-shadow:0 0 0 0 var(--blue);transition:box-shadow .12s}
+.thumb img{width:100%;display:block;aspect-ratio:var(--ar,16/10);object-fit:cover}
+.thumb.sel{box-shadow:0 0 0 3px var(--blue)}
+.chk{position:absolute;top:8px;inset-inline-end:8px;width:26px;height:26px;border-radius:50%;border:2px solid #fff;background:rgba(0,0,0,.28);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+.thumb.sel .chk{background:var(--blue);border-color:var(--blue)}
+.meta{position:absolute;bottom:8px;inset-inline:8px;display:flex;justify-content:space-between;gap:6px}
+.meta span{background:rgba(20,24,31,.62);color:#fff;font-size:12px;padding:2px 8px;border-radius:999px}
+.meta .star{background:var(--gold);color:#2b2100;font-weight:700}
+.bar{position:fixed;inset-inline:0;bottom:0;background:rgba(255,255,255,.94);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+.bar .in{max-width:860px;margin:0 auto;display:flex;gap:10px}
+.bar button{font:inherit;font-weight:700;border-radius:12px;padding:13px;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink)}
+.bar #toggleAll{flex:1}
+.bar #dlSel{flex:2;background:var(--blue);border-color:var(--blue);color:#fff}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap" id="wrap">
   <header>
     <h1 data-i="title"></h1>
-    <button id="langBtn">Français</button>
+    <button class="pill" id="langBtn">Français</button>
   </header>
 
   <div class="card">
-    <label class="drop" id="drop">
+    <label class="drop">
       <input type="file" id="file" accept="video/*" class="hidden">
-      <div data-i="pick"></div>
-      <div class="hint" id="fname"></div>
+      <div class="ic">🎞️</div>
+      <b data-i="pick"></b>
+      <small data-i="pickSub"></small>
+      <div class="fname" id="fname"></div>
     </label>
-    <div class="row" style="margin-top:12px">
-      <span data-i="every"></span>
-      <select id="step">
-        <option value="0.25">0.25</option>
-        <option value="0.5" selected>0.5</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-      </select>
-      <span data-i="sec"></span>
-      <button class="main" id="go" disabled data-i="go"></button>
+
+    <div class="label" data-i="every"></div>
+    <div class="seg" id="stepSeg">
+      <button data-v="0.25">0.25</button>
+      <button data-v="0.5" class="on">0.5</button>
+      <button data-v="1">1</button>
+      <button data-v="2">2</button>
     </div>
-    <div class="bar hidden" id="barBox"><i id="bar"></i></div>
-    <div class="hint" id="status" style="margin-top:6px"></div>
+
+    <button class="primary" id="go" disabled data-i="go"></button>
+    <div class="prog hidden" id="barBox"><i id="bar"></i></div>
+    <div class="status" id="status"></div>
   </div>
 
   <div id="results" class="hidden">
-    <div class="card best">
-      <div class="row" style="justify-content:space-between;margin-bottom:10px">
-        <b data-i="best"></b>
-        <button id="dlBest" data-i="dlBest"></button>
+    <div class="card">
+      <div class="hero">
+        <img id="bestImg" alt="">
+        <div class="tag" id="bestTag"></div>
       </div>
-      <img id="bestImg" alt="">
+      <button class="ghost" id="dlBest" data-i="dlBest"></button>
     </div>
 
     <div class="card">
-      <div class="row" style="justify-content:space-between;margin-bottom:10px">
-        <b><span data-i="all"></span> (<span id="count">0</span>)</b>
-        <div class="row">
-          <button id="selAll" data-i="selAll"></button>
-          <button id="selNone" data-i="selNone"></button>
-          <button class="main" id="dlSel" data-i="dlSel"></button>
-        </div>
+      <div class="sec-title">
+        <b><span data-i="all"></span> · <span id="count">0</span></b>
       </div>
-      <div class="hint" data-i="tapHint" style="margin-bottom:8px"></div>
+      <div class="seg" id="sortSeg">
+        <button data-v="q" class="on" data-i="sortQ"></button>
+        <button data-v="t" data-i="sortT"></button>
+      </div>
       <div class="grid" id="grid"></div>
     </div>
+  </div>
+</div>
+
+<div class="bar hidden" id="actionBar">
+  <div class="in">
+    <button id="toggleAll"></button>
+    <button id="dlSel"></button>
   </div>
 </div>
 
@@ -89,17 +116,18 @@ button:disabled{opacity:.5;cursor:default}
 const T = {
   ar: {
     title: "أفضل الصور من الفيديو",
-    pick: "اضغط لاختيار فيديو",
-    every: "صورة كل",
-    sec: "ثانية",
+    pick: "اختر فيديو",
+    pickSub: "من معرض الصور أو الملفات",
+    every: "صورة كل … (بالثواني)",
     go: "استخراج الصور",
-    best: "⭐ أفضل صورة",
-    dlBest: "تحميل",
-    all: "كل الصور (الأفضل أولاً)",
+    best: "الأفضل",
+    dlBest: "تحميل أفضل صورة",
+    all: "كل الصور",
+    sortQ: "حسب الجودة",
+    sortT: "حسب الوقت",
     selAll: "تحديد الكل",
     selNone: "إلغاء التحديد",
     dlSel: "تحميل المحدد",
-    tapHint: "اضغط على الصورة لتحديدها، ثم اضغط «تحميل المحدد».",
     loading: "جاري التحميل…",
     working: (a, b) => `جاري التحليل… ${a} / ${b}`,
     done: n => `تم! استُخرجت ${n} صورة.`,
@@ -109,17 +137,18 @@ const T = {
   },
   fr: {
     title: "Meilleures images de la vidéo",
-    pick: "Appuyez pour choisir une vidéo",
-    every: "Une image toutes les",
-    sec: "secondes",
+    pick: "Choisir une vidéo",
+    pickSub: "Depuis la photothèque ou les fichiers",
+    every: "Une image toutes les … (secondes)",
     go: "Extraire les images",
-    best: "⭐ Meilleure image",
-    dlBest: "Télécharger",
-    all: "Toutes les images (meilleures d'abord)",
+    best: "Meilleure",
+    dlBest: "Télécharger la meilleure image",
+    all: "Toutes les images",
+    sortQ: "Par qualité",
+    sortT: "Par temps",
     selAll: "Tout sélectionner",
     selNone: "Désélectionner",
     dlSel: "Télécharger la sélection",
-    tapHint: "Touchez une image pour la sélectionner, puis « Télécharger la sélection ».",
     loading: "Chargement…",
     working: (a, b) => `Analyse… ${a} / ${b}`,
     done: n => `Terminé ! ${n} images extraites.`,
@@ -128,7 +157,7 @@ const T = {
     none: "Choisissez au moins une image."
   }
 };
-let lang = "ar";
+let lang = "ar", sortMode = "q", file = null, frames = [], busy = false, ar = "16 / 9";
 const $ = id => document.getElementById(id);
 const t = k => T[lang][k];
 
@@ -137,17 +166,28 @@ function applyLang() {
   document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
   document.querySelectorAll("[data-i]").forEach(el => { el.textContent = t(el.dataset.i); });
   $("langBtn").textContent = lang === "ar" ? "Français" : "العربية";
+  updateBar();
+  if (frames.length) $("bestTag").textContent = "⭐ " + t("best") + " · " + pct(frames[0]) + "%";
 }
 $("langBtn").onclick = () => { lang = lang === "ar" ? "fr" : "ar"; applyLang(); };
-applyLang();
+
+function bindSeg(id, cb) {
+  $(id).querySelectorAll("button").forEach(b => b.onclick = () => {
+    $(id).querySelectorAll("button").forEach(x => x.classList.remove("on"));
+    b.classList.add("on");
+    cb(b.dataset.v);
+  });
+}
+let step = 0.5;
+bindSeg("stepSeg", v => step = parseFloat(v));
+bindSeg("sortSeg", v => { sortMode = v; renderGrid(); });
 
 const MAX_FRAMES = 200;
 const video = $("video");
-let file = null, frames = [], busy = false;
 
 $("file").onchange = e => {
   file = e.target.files[0] || null;
-  $("fname").textContent = file ? file.name : "";
+  $("fname").textContent = file ? "✓ " + file.name : "";
   $("go").disabled = !file;
 };
 
@@ -166,8 +206,9 @@ function toBlob(canvas) {
 // ---------- تحليل جودة الصورة ----------
 const sc = document.createElement("canvas");
 const sctx = sc.getContext("2d", { willReadFrequently: true });
+const GRID = 6;
 function analyze(source, vw, vh) {
-  const w = 320, h = Math.max(1, Math.round(320 * vh / vw));
+  const w = 640, h = Math.max(8, Math.round(640 * vh / vw));
   sc.width = w; sc.height = h;
   sctx.drawImage(source, 0, 0, w, h);
   const d = sctx.getImageData(0, 0, w, h).data;
@@ -180,21 +221,31 @@ function analyze(source, vw, vh) {
   }
   const n = w * h, mean = sum / n;
   const std = Math.sqrt(Math.max(0, sum2 / n - mean * mean));
-  // الحدة: تباين لابلاس
-  let ls = 0, ls2 = 0, c = 0;
+
+  // الحدة: تباين لابلاس لكل مربع صغير، ثم متوسط أوضح 30% من المربعات
+  // (هكذا لا تُظلم الصورة التي فيها جدار فارغ وموضوع واضح)
+  const tl = new Float64Array(GRID * GRID), tl2 = new Float64Array(GRID * GRID), tc = new Float64Array(GRID * GRID);
   for (let y = 1; y < h - 1; y++) {
+    const ty = Math.min(GRID - 1, Math.floor(y * GRID / h));
     for (let x = 1; x < w - 1; x++) {
       const p = y * w + x;
       const l = 4 * g[p] - g[p - 1] - g[p + 1] - g[p - w] - g[p + w];
-      ls += l; ls2 += l * l; c++;
+      const k = ty * GRID + Math.min(GRID - 1, Math.floor(x * GRID / w));
+      tl[k] += l; tl2[k] += l * l; tc[k]++;
     }
   }
-  const lm = ls / c, sharp = ls2 / c - lm * lm;
+  const vars = [];
+  for (let k = 0; k < GRID * GRID; k++) if (tc[k]) { const m = tl[k] / tc[k]; vars.push(tl2[k] / tc[k] - m * m); }
+  vars.sort((a, b) => b - a);
+  const top = vars.slice(0, Math.max(1, Math.round(vars.length * 0.3)));
+  const sharp = top.reduce((a, b) => a + b, 0) / top.length;
+
   let expo = 1 - Math.abs(mean - 125) / 125;
   expo = Math.max(0, Math.min(1, expo)) * (1 - Math.min(1, (clip / n) * 2));
   const contrast = Math.min(1, std / 60);
   return { sharp, expo, contrast };
 }
+const pct = f => Math.round(f.score * 100);
 
 async function run() {
   if (!file || busy) return;
@@ -203,6 +254,8 @@ async function run() {
   frames.forEach(f => URL.revokeObjectURL(f.url));
   frames = [];
   $("results").classList.add("hidden");
+  $("actionBar").classList.add("hidden");
+  $("wrap").classList.remove("has-bar");
   $("barBox").classList.remove("hidden");
   $("bar").style.width = "0%";
   $("status").textContent = t("loading");
@@ -235,7 +288,6 @@ async function run() {
     const vw = video.videoWidth, vh = video.videoHeight;
     if (!isFinite(dur) || !vw) throw new Error("bad");
 
-    const step = parseFloat($("step").value);
     let times = [];
     for (let x = Math.min(step / 2, dur / 2); x < dur; x += step) times.push(x);
     if (times.length > MAX_FRAMES) {
@@ -243,8 +295,9 @@ async function run() {
       times = Array.from({ length: MAX_FRAMES }, (_, i) => times[Math.floor(i * k)]);
     }
 
-    const scale = Math.min(1, 1920 / vw);
+    const scale = Math.min(1, 1920 / Math.max(vw, vh));
     const cw = Math.round(vw * scale), ch = Math.round(vh * scale);
+    ar = cw + " / " + ch;
     const canvas = document.createElement("canvas");
     canvas.width = cw; canvas.height = ch;
     const ctx = canvas.getContext("2d");
@@ -263,14 +316,21 @@ async function run() {
     const maxSharp = Math.max(...frames.map(f => f.m.sharp)) || 1;
     frames.forEach(f => {
       const s = Math.sqrt(f.m.sharp / maxSharp);
-      f.score = 0.6 * s + 0.25 * f.m.expo + 0.15 * f.m.contrast;
+      f.score = 0.65 * s + 0.2 * f.m.expo + 0.15 * f.m.contrast;
     });
     frames.sort((a, b) => b.score - a.score);
     frames.forEach((f, i) => { f.rank = i + 1; });
     frames[0].selected = true;
 
-    render();
+    $("results").classList.remove("hidden");
+    $("actionBar").classList.remove("hidden");
+    $("wrap").classList.add("has-bar");
+    $("bestImg").src = frames[0].url;
+    $("count").textContent = frames.length;
+    renderGrid();
+    applyLang();
     $("status").textContent = t("done")(frames.length);
+    $("results").scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (e) {
     $("status").textContent = t("err") + " (" + (e && e.message ? e.message : e) + ")";
   }
@@ -281,32 +341,42 @@ async function run() {
 $("go").onclick = run;
 
 function fmtTime(s) {
-  const m = Math.floor(s / 60), r = (s % 60).toFixed(1);
-  return `${m}:${r.padStart(4, "0")}`;
+  if (s < 60) return s.toFixed(1) + "s";
+  const m = Math.floor(s / 60), r = (s % 60).toFixed(0);
+  return m + ":" + r.padStart(2, "0");
 }
-function render() {
-  $("results").classList.remove("hidden");
-  $("bestImg").src = frames[0].url;
-  $("count").textContent = frames.length;
+function renderGrid() {
+  const list = sortMode === "q" ? frames : [...frames].sort((a, b) => a.time - b.time);
   const grid = $("grid");
   grid.innerHTML = "";
-  frames.forEach(f => {
+  grid.style.setProperty("--ar", ar);
+  list.forEach(f => {
     const d = document.createElement("div");
     d.className = "thumb" + (f.selected ? " sel" : "");
-    d.innerHTML = `<img src="${f.url}" loading="lazy" alt="">
+    d.innerHTML = `<img src="${f.url}" alt="">
       <div class="chk">${f.selected ? "✓" : ""}</div>
-      ${f.rank === 1 ? '<div class="badge">⭐</div>' : ""}
-      <div class="info"><span>#${f.rank}</span><span>${fmtTime(f.time)}</span></div>`;
-    d.onclick = () => { f.selected = !f.selected; d.classList.toggle("sel", f.selected); d.querySelector(".chk").textContent = f.selected ? "✓" : ""; };
+      <div class="meta"><span class="${f.rank === 1 ? "star" : ""}">${f.rank === 1 ? "⭐ " : ""}${pct(f)}%</span><span>${fmtTime(f.time)}</span></div>`;
+    d.onclick = () => {
+      f.selected = !f.selected;
+      d.classList.toggle("sel", f.selected);
+      d.querySelector(".chk").textContent = f.selected ? "✓" : "";
+      updateBar();
+    };
     grid.appendChild(d);
   });
+  updateBar();
 }
-function setAll(v) {
-  frames.forEach(f => f.selected = v);
-  render();
+function updateBar() {
+  const n = frames.filter(f => f.selected).length;
+  const all = frames.length && n === frames.length;
+  $("toggleAll").textContent = all ? t("selNone") : t("selAll");
+  $("dlSel").textContent = t("dlSel") + (n ? " (" + n + ")" : "");
 }
-$("selAll").onclick = () => setAll(true);
-$("selNone").onclick = () => setAll(false);
+$("toggleAll").onclick = () => {
+  const all = frames.every(f => f.selected);
+  frames.forEach(f => f.selected = !all);
+  renderGrid();
+};
 
 function download(blob, name) {
   const a = document.createElement("a");
@@ -379,8 +449,10 @@ $("dlSel").onclick = async () => {
   const files = [];
   for (const f of sel) files.push({ name: nameOf(f), data: new Uint8Array(await f.blob.arrayBuffer()) });
   download(makeZip(files), "images.zip");
-  $("status").textContent = t("done")(frames.length);
+  $("status").textContent = "";
 };
+
+applyLang();
 </script>
 </body>
 </html>
