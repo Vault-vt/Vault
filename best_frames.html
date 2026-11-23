@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>أفضل الصور من الفيديو</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;background:#f4f5f7;color:#1b1f24}
+.wrap{max-width:960px;margin:0 auto;padding:16px}
+header{display:flex;justify-content:space-between;align-items:center;gap:8px}
+h1{font-size:20px;margin:0}
+button,select{font:inherit;border-radius:10px;border:1px solid #cfd4da;background:#fff;padding:10px 14px;cursor:pointer}
+button.main{background:#1f6feb;color:#fff;border-color:#1f6feb}
+button:disabled{opacity:.5;cursor:default}
+.card{background:#fff;border-radius:14px;padding:14px;margin-top:14px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.drop{border:2px dashed #aab2bb;border-radius:14px;padding:26px;text-align:center;cursor:pointer;color:#555}
+.bar{height:8px;background:#e3e6ea;border-radius:8px;overflow:hidden;margin-top:10px}
+.bar i{display:block;height:100%;width:0;background:#1f6feb;transition:width .1s}
+.best img{width:100%;border-radius:12px;display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.thumb{position:relative;border-radius:10px;overflow:hidden;border:3px solid transparent;cursor:pointer;background:#000}
+.thumb img{width:100%;display:block;aspect-ratio:16/10;object-fit:cover}
+.thumb.sel{border-color:#1f6feb}
+.thumb .chk{position:absolute;top:6px;inset-inline-start:6px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px}
+.thumb.sel .chk{background:#1f6feb}
+.thumb .info{position:absolute;bottom:0;inset-inline:0;background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff;font-size:12px;padding:14px 6px 4px;display:flex;justify-content:space-between}
+.badge{position:absolute;top:6px;inset-inline-end:6px;background:#f5b400;color:#222;font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px}
+.hint{color:#666;font-size:14px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 data-i="title"></h1>
+    <button id="langBtn">Français</button>
+  </header>
+
+  <div class="card">
+    <label class="drop" id="drop">
+      <input type="file" id="file" accept="video/*" class="hidden">
+      <div data-i="pick"></div>
+      <div class="hint" id="fname"></div>
+    </label>
+    <div class="row" style="margin-top:12px">
+      <span data-i="every"></span>
+      <select id="step">
+        <option value="0.25">0.25</option>
+        <option value="0.5" selected>0.5</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+      </select>
+      <span data-i="sec"></span>
+      <button class="main" id="go" disabled data-i="go"></button>
+    </div>
+    <div class="bar hidden" id="barBox"><i id="bar"></i></div>
+    <div class="hint" id="status" style="margin-top:6px"></div>
+  </div>
+
+  <div id="results" class="hidden">
+    <div class="card best">
+      <div class="row" style="justify-content:space-between;margin-bottom:10px">
+        <b data-i="best"></b>
+        <button id="dlBest" data-i="dlBest"></button>
+      </div>
+      <img id="bestImg" alt="">
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:10px">
+        <b><span data-i="all"></span> (<span id="count">0</span>)</b>
+        <div class="row">
+          <button id="selAll" data-i="selAll"></button>
+          <button id="selNone" data-i="selNone"></button>
+          <button class="main" id="dlSel" data-i="dlSel"></button>
+        </div>
+      </div>
+      <div class="hint" data-i="tapHint" style="margin-bottom:8px"></div>
+      <div class="grid" id="grid"></div>
+    </div>
+  </div>
+</div>
+
+<video id="video" muted playsinline webkit-playsinline preload="auto" style="position:fixed;left:-9999px;top:0;width:2px;height:2px;opacity:0"></video>
+
+<script>
+const T = {
+  ar: {
+    title: "أفضل الصور من الفيديو",
+    pick: "اضغط لاختيار فيديو",
+    every: "صورة كل",
+    sec: "ثانية",
+    go: "استخراج الصور",
+    best: "⭐ أفضل صورة",
+    dlBest: "تحميل",
+    all: "كل الصور (الأفضل أولاً)",
+    selAll: "تحديد الكل",
+    selNone: "إلغاء التحديد",
+    dlSel: "تحميل المحدد",
+    tapHint: "اضغط على الصورة لتحديدها، ثم اضغط «تحميل المحدد».",
+    loading: "جاري التحميل…",
+    working: (a, b) => `جاري التحليل… ${a} / ${b}`,
+    done: n => `تم! استُخرجت ${n} صورة.`,
+    err: "تعذّر قراءة هذا الفيديو.",
+    zipping: "جاري تجهيز الملف…",
+    none: "اختر صورة واحدة على الأقل."
+  },
+  fr: {
+    title: "Meilleures images de la vidéo",
+    pick: "Appuyez pour choisir une vidéo",
+    every: "Une image toutes les",
+    sec: "secondes",
+    go: "Extraire les images",
+    best: "⭐ Meilleure image",
+    dlBest: "Télécharger",
+    all: "Toutes les images (meilleures d'abord)",
+    selAll: "Tout sélectionner",
+    selNone: "Désélectionner",
+    dlSel: "Télécharger la sélection",
+    tapHint: "Touchez une image pour la sélectionner, puis « Télécharger la sélection ».",
+    loading: "Chargement…",
+    working: (a, b) => `Analyse… ${a} / ${b}`,
+    done: n => `Terminé ! ${n} images extraites.`,
+    err: "Impossible de lire cette vidéo.",
+    zipping: "Préparation du fichier…",
+    none: "Choisissez au moins une image."
+  }
+};
+let lang = "ar";
+const $ = id => document.getElementById(id);
+const t = k => T[lang][k];
+
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  document.querySelectorAll("[data-i]").forEach(el => { el.textContent = t(el.dataset.i); });
+  $("langBtn").textContent = lang === "ar" ? "Français" : "العربية";
+}
+$("langBtn").onclick = () => { lang = lang === "ar" ? "fr" : "ar"; applyLang(); };
+applyLang();
+
+const MAX_FRAMES = 200;
+const video = $("video");
+let file = null, frames = [], busy = false;
+
+$("file").onchange = e => {
+  file = e.target.files[0] || null;
+  $("fname").textContent = file ? file.name : "";
+  $("go").disabled = !file;
+};
+
+function seek(time) {
+  return new Promise(res => {
+    const done = () => { video.removeEventListener("seeked", done); clearTimeout(tm); res(); };
+    const tm = setTimeout(done, 4000);
+    video.addEventListener("seeked", done);
+    video.currentTime = time;
+  });
+}
+function toBlob(canvas) {
+  return new Promise(res => canvas.toBlob(res, "image/jpeg", 0.92));
+}
+
+// ---------- تحليل جودة الصورة ----------
+const sc = document.createElement("canvas");
+const sctx = sc.getContext("2d", { willReadFrequently: true });
+function analyze(source, vw, vh) {
+  const w = 320, h = Math.max(1, Math.round(320 * vh / vw));
+  sc.width = w; sc.height = h;
+  sctx.drawImage(source, 0, 0, w, h);
+  const d = sctx.getImageData(0, 0, w, h).data;
+  const g = new Float32Array(w * h);
+  let sum = 0, sum2 = 0, clip = 0;
+  for (let i = 0, p = 0; i < d.length; i += 4, p++) {
+    const v = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+    g[p] = v; sum += v; sum2 += v * v;
+    if (v < 10 || v > 245) clip++;
+  }
+  const n = w * h, mean = sum / n;
+  const std = Math.sqrt(Math.max(0, sum2 / n - mean * mean));
+  // الحدة: تباين لابلاس
+  let ls = 0, ls2 = 0, c = 0;
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const p = y * w + x;
+      const l = 4 * g[p] - g[p - 1] - g[p + 1] - g[p - w] - g[p + w];
+      ls += l; ls2 += l * l; c++;
+    }
+  }
+  const lm = ls / c, sharp = ls2 / c - lm * lm;
+  let expo = 1 - Math.abs(mean - 125) / 125;
+  expo = Math.max(0, Math.min(1, expo)) * (1 - Math.min(1, (clip / n) * 2));
+  const contrast = Math.min(1, std / 60);
+  return { sharp, expo, contrast };
+}
+
+async function run() {
+  if (!file || busy) return;
+  busy = true;
+  $("go").disabled = true;
+  frames.forEach(f => URL.revokeObjectURL(f.url));
+  frames = [];
+  $("results").classList.add("hidden");
+  $("barBox").classList.remove("hidden");
+  $("bar").style.width = "0%";
+  $("status").textContent = t("loading");
+
+  try {
+    // محاولات متعددة: الآيفون أحيانًا يحتاج نوع الملف صراحةً
+    const variants = [file, new Blob([file], { type: "video/mp4" }), new Blob([file], { type: "video/quicktime" })];
+    let lastErr = null, ok = false;
+    for (const v of variants) {
+      const src = URL.createObjectURL(v);
+      video.src = src;
+      video.load();
+      try {
+        await new Promise((res, rej) => {
+          const to = setTimeout(() => rej(new Error("timeout")), 15000);
+          video.onloadedmetadata = () => { clearTimeout(to); res(); };
+          video.onerror = () => { clearTimeout(to); rej(new Error("media error " + (video.error ? video.error.code : "?"))); };
+        });
+        ok = true;
+        break;
+      } catch (e) { lastErr = e; URL.revokeObjectURL(src); }
+    }
+    if (!ok) throw lastErr;
+    // iOS: لا يحمّل الفيديو إطاراته قبل محاولة التشغيل
+    try { await video.play(); video.pause(); } catch (e) {}
+    if (video.readyState < 2) {
+      await new Promise(res => { video.onloadeddata = res; setTimeout(res, 5000); });
+    }
+    const dur = video.duration;
+    const vw = video.videoWidth, vh = video.videoHeight;
+    if (!isFinite(dur) || !vw) throw new Error("bad");
+
+    const step = parseFloat($("step").value);
+    let times = [];
+    for (let x = Math.min(step / 2, dur / 2); x < dur; x += step) times.push(x);
+    if (times.length > MAX_FRAMES) {
+      const k = times.length / MAX_FRAMES;
+      times = Array.from({ length: MAX_FRAMES }, (_, i) => times[Math.floor(i * k)]);
+    }
+
+    const scale = Math.min(1, 1920 / vw);
+    const cw = Math.round(vw * scale), ch = Math.round(vh * scale);
+    const canvas = document.createElement("canvas");
+    canvas.width = cw; canvas.height = ch;
+    const ctx = canvas.getContext("2d");
+
+    for (let i = 0; i < times.length; i++) {
+      await seek(times[i]);
+      ctx.drawImage(video, 0, 0, cw, ch);
+      const m = analyze(canvas, cw, ch);
+      const blob = await toBlob(canvas);
+      frames.push({ time: times[i], blob, url: URL.createObjectURL(blob), m, selected: false });
+      $("bar").style.width = Math.round(((i + 1) / times.length) * 100) + "%";
+      $("status").textContent = t("working")(i + 1, times.length);
+    }
+
+    // الدرجة النهائية
+    const maxSharp = Math.max(...frames.map(f => f.m.sharp)) || 1;
+    frames.forEach(f => {
+      const s = Math.sqrt(f.m.sharp / maxSharp);
+      f.score = 0.6 * s + 0.25 * f.m.expo + 0.15 * f.m.contrast;
+    });
+    frames.sort((a, b) => b.score - a.score);
+    frames.forEach((f, i) => { f.rank = i + 1; });
+    frames[0].selected = true;
+
+    render();
+    $("status").textContent = t("done")(frames.length);
+  } catch (e) {
+    $("status").textContent = t("err") + " (" + (e && e.message ? e.message : e) + ")";
+  }
+  $("barBox").classList.add("hidden");
+  busy = false;
+  $("go").disabled = false;
+}
+$("go").onclick = run;
+
+function fmtTime(s) {
+  const m = Math.floor(s / 60), r = (s % 60).toFixed(1);
+  return `${m}:${r.padStart(4, "0")}`;
+}
+function render() {
+  $("results").classList.remove("hidden");
+  $("bestImg").src = frames[0].url;
+  $("count").textContent = frames.length;
+  const grid = $("grid");
+  grid.innerHTML = "";
+  frames.forEach(f => {
+    const d = document.createElement("div");
+    d.className = "thumb" + (f.selected ? " sel" : "");
+    d.innerHTML = `<img src="${f.url}" loading="lazy" alt="">
+      <div class="chk">${f.selected ? "✓" : ""}</div>
+      ${f.rank === 1 ? '<div class="badge">⭐</div>' : ""}
+      <div class="info"><span>#${f.rank}</span><span>${fmtTime(f.time)}</span></div>`;
+    d.onclick = () => { f.selected = !f.selected; d.classList.toggle("sel", f.selected); d.querySelector(".chk").textContent = f.selected ? "✓" : ""; };
+    grid.appendChild(d);
+  });
+}
+function setAll(v) {
+  frames.forEach(f => f.selected = v);
+  render();
+}
+$("selAll").onclick = () => setAll(true);
+$("selNone").onclick = () => setAll(false);
+
+function download(blob, name) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+}
+function nameOf(f) {
+  return `image_${String(f.rank).padStart(3, "0")}_${f.time.toFixed(1)}s.jpg`;
+}
+$("dlBest").onclick = () => download(frames[0].blob, nameOf(frames[0]));
+
+//ZIP-START
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+function crc32(u8) {
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < u8.length; i++) c = CRC_TABLE[(c ^ u8[i]) & 255] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+// ملف ZIP بدون ضغط (الصور مضغوطة أصلاً)
+function makeZip(files) {
+  const enc = new TextEncoder();
+  const now = new Date();
+  const dosTime = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
+  const dosDate = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+  const parts = [], central = [];
+  let offset = 0;
+  for (const f of files) {
+    const name = enc.encode(f.name), crc = crc32(f.data), size = f.data.length;
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true);
+    lh.setUint16(8, 0, true); lh.setUint16(10, dosTime, true); lh.setUint16(12, dosDate, true);
+    lh.setUint32(14, crc, true); lh.setUint32(18, size, true); lh.setUint32(22, size, true);
+    lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
+    parts.push(new Uint8Array(lh.buffer), name, f.data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true);
+    ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true); ch.setUint16(12, dosTime, true);
+    ch.setUint16(14, dosDate, true); ch.setUint32(16, crc, true); ch.setUint32(20, size, true);
+    ch.setUint32(24, size, true); ch.setUint16(28, name.length, true); ch.setUint16(30, 0, true);
+    ch.setUint16(32, 0, true); ch.setUint16(34, 0, true); ch.setUint16(36, 0, true);
+    ch.setUint32(38, 0, true); ch.setUint32(42, offset, true);
+    central.push(new Uint8Array(ch.buffer), name);
+    offset += 30 + name.length + size;
+  }
+  let cdSize = 0;
+  central.forEach(p => cdSize += p.length);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true);
+  end.setUint16(10, files.length, true); end.setUint32(12, cdSize, true); end.setUint32(16, offset, true);
+  return new Blob([...parts, ...central, new Uint8Array(end.buffer)], { type: "application/zip" });
+}
+//ZIP-END
+
+$("dlSel").onclick = async () => {
+  const sel = frames.filter(f => f.selected);
+  if (!sel.length) { $("status").textContent = t("none"); return; }
+  if (sel.length === 1) { download(sel[0].blob, nameOf(sel[0])); return; }
+  $("status").textContent = t("zipping");
+  const files = [];
+  for (const f of sel) files.push({ name: nameOf(f), data: new Uint8Array(await f.blob.arrayBuffer()) });
+  download(makeZip(files), "images.zip");
+  $("status").textContent = t("done")(frames.length);
+};
+</script>
+</body>
+</html>
